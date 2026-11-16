@@ -19,16 +19,16 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	FilesService_Save_FullMethodName = "/files.FilesService/Save"
-	FilesService_Del_FullMethodName  = "/files.FilesService/Del"
+	FilesService_Del_FullMethodName      = "/files.FilesService/Del"
+	FilesService_TempPath_FullMethodName = "/files.FilesService/TempPath"
 )
 
 // FilesServiceClient is the client API for FilesService service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type FilesServiceClient interface {
-	Save(ctx context.Context, in *SaveFileRequest, opts ...grpc.CallOption) (*SaveFileResponse, error)
 	Del(ctx context.Context, in *DelFileRequest, opts ...grpc.CallOption) (*DelFileResponse, error)
+	TempPath(ctx context.Context, in *TempPathReqeust, opts ...grpc.CallOption) (grpc.ServerStreamingClient[TempPathResponse], error)
 }
 
 type filesServiceClient struct {
@@ -37,16 +37,6 @@ type filesServiceClient struct {
 
 func NewFilesServiceClient(cc grpc.ClientConnInterface) FilesServiceClient {
 	return &filesServiceClient{cc}
-}
-
-func (c *filesServiceClient) Save(ctx context.Context, in *SaveFileRequest, opts ...grpc.CallOption) (*SaveFileResponse, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(SaveFileResponse)
-	err := c.cc.Invoke(ctx, FilesService_Save_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
 }
 
 func (c *filesServiceClient) Del(ctx context.Context, in *DelFileRequest, opts ...grpc.CallOption) (*DelFileResponse, error) {
@@ -59,12 +49,31 @@ func (c *filesServiceClient) Del(ctx context.Context, in *DelFileRequest, opts .
 	return out, nil
 }
 
+func (c *filesServiceClient) TempPath(ctx context.Context, in *TempPathReqeust, opts ...grpc.CallOption) (grpc.ServerStreamingClient[TempPathResponse], error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	stream, err := c.cc.NewStream(ctx, &FilesService_ServiceDesc.Streams[0], FilesService_TempPath_FullMethodName, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &grpc.GenericClientStream[TempPathReqeust, TempPathResponse]{ClientStream: stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
+type FilesService_TempPathClient = grpc.ServerStreamingClient[TempPathResponse]
+
 // FilesServiceServer is the server API for FilesService service.
 // All implementations must embed UnimplementedFilesServiceServer
 // for forward compatibility.
 type FilesServiceServer interface {
-	Save(context.Context, *SaveFileRequest) (*SaveFileResponse, error)
 	Del(context.Context, *DelFileRequest) (*DelFileResponse, error)
+	TempPath(*TempPathReqeust, grpc.ServerStreamingServer[TempPathResponse]) error
 	mustEmbedUnimplementedFilesServiceServer()
 }
 
@@ -75,11 +84,11 @@ type FilesServiceServer interface {
 // pointer dereference when methods are called.
 type UnimplementedFilesServiceServer struct{}
 
-func (UnimplementedFilesServiceServer) Save(context.Context, *SaveFileRequest) (*SaveFileResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "method Save not implemented")
-}
 func (UnimplementedFilesServiceServer) Del(context.Context, *DelFileRequest) (*DelFileResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method Del not implemented")
+}
+func (UnimplementedFilesServiceServer) TempPath(*TempPathReqeust, grpc.ServerStreamingServer[TempPathResponse]) error {
+	return status.Error(codes.Unimplemented, "method TempPath not implemented")
 }
 func (UnimplementedFilesServiceServer) mustEmbedUnimplementedFilesServiceServer() {}
 func (UnimplementedFilesServiceServer) testEmbeddedByValue()                      {}
@@ -102,24 +111,6 @@ func RegisterFilesServiceServer(s grpc.ServiceRegistrar, srv FilesServiceServer)
 	s.RegisterService(&FilesService_ServiceDesc, srv)
 }
 
-func _FilesService_Save_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(SaveFileRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(FilesServiceServer).Save(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: FilesService_Save_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(FilesServiceServer).Save(ctx, req.(*SaveFileRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 func _FilesService_Del_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(DelFileRequest)
 	if err := dec(in); err != nil {
@@ -138,6 +129,17 @@ func _FilesService_Del_Handler(srv interface{}, ctx context.Context, dec func(in
 	return interceptor(ctx, in, info, handler)
 }
 
+func _FilesService_TempPath_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(TempPathReqeust)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
+	}
+	return srv.(FilesServiceServer).TempPath(m, &grpc.GenericServerStream[TempPathReqeust, TempPathResponse]{ServerStream: stream})
+}
+
+// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
+type FilesService_TempPathServer = grpc.ServerStreamingServer[TempPathResponse]
+
 // FilesService_ServiceDesc is the grpc.ServiceDesc for FilesService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -146,14 +148,16 @@ var FilesService_ServiceDesc = grpc.ServiceDesc{
 	HandlerType: (*FilesServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "Save",
-			Handler:    _FilesService_Save_Handler,
-		},
-		{
 			MethodName: "Del",
 			Handler:    _FilesService_Del_Handler,
 		},
 	},
-	Streams:  []grpc.StreamDesc{},
+	Streams: []grpc.StreamDesc{
+		{
+			StreamName:    "TempPath",
+			Handler:       _FilesService_TempPath_Handler,
+			ServerStreams: true,
+		},
+	},
 	Metadata: "files.proto",
 }

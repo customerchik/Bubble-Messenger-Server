@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"net/http"
+	"strings"
 
 	"github.com/labstack/echo/v4"
 )
@@ -27,6 +28,10 @@ type GetAvatarRequest struct {
 	LoginForSearch string
 }
 
+type GetFileRequest struct {
+	StorageFilepath string
+}
+
 func (h *Handler) SendFile(c echo.Context, requestBody []byte, key string, userLogin string) error {
 	var req SendFileRequest
 	if err := json.Unmarshal(requestBody, &req); err != nil {
@@ -39,15 +44,21 @@ func (h *Handler) SendFile(c echo.Context, requestBody []byte, key string, userL
 		return c.String(http.StatusBadRequest, "Did not receive all server data")
 	}
 
-	fileStoragePath, err := h.FilesService.SaveFile(c.Request().Context(), req.File)
-	if err != nil {
-		c.Logger().Error("Save file ERR: %s", err)
-		resp := "Cant save file"
-		if key != "" {
-			resp, _ = crypto.StringEncrypt([]byte(resp), key)
+	statusCh := make(chan string)
+	go h.FilesService.SaveFileTempPath(c.Request().Context(), statusCh)
+
+	tempPath := <-statusCh
+	if strings.Contains(tempPath, "Error") {
+		return c.NoContent(http.StatusInternalServerError)
+	} else {
+		if _, err := c.Response().Write([]byte(tempPath + "\n")); err != nil {
+			return err
 		}
-		return c.String(http.StatusInternalServerError, resp)
+
+		c.Response().Flush()
 	}
+
+	fileStoragePath := <-statusCh
 
 	if err := h.MessengerService.SendFile(c.Request().Context(), h.UsersService, userLogin, req.Receiver, req.FileName, fileStoragePath); err != nil {
 		go h.FilesService.DelFile(context.Background(), fileStoragePath)
@@ -93,15 +104,21 @@ func (h *Handler) SetAvatar(c echo.Context, requestBody []byte, key string, user
 		return c.JSON(http.StatusBadRequest, "Invalid JSON")
 	}
 
-	storageAvatarPath, err := h.FilesService.SaveAvatar(c.Request().Context(), req.Avatar)
-	if err != nil {
-		c.Logger().Errorf("Save avatar ERR: %s", err)
-		resp := err.Error()
-		if key != "" {
-			resp, _ = crypto.StringEncrypt([]byte(resp), key)
+	statusCh := make(chan string)
+	go h.FilesService.SaveAvatarTempPath(c.Request().Context(), statusCh)
+
+	tempPath := <-statusCh
+	if strings.Contains(tempPath, "Error") {
+		return c.NoContent(http.StatusInternalServerError)
+	} else {
+		if _, err := c.Response().Write([]byte(tempPath + "\n")); err != nil {
+			return err
 		}
-		return c.String(http.StatusInternalServerError, resp)
+
+		c.Response().Flush()
 	}
+
+	storageAvatarPath := <-statusCh
 
 	if err := h.UsersService.SetAvatar(c.Request().Context(), userLogin, storageAvatarPath); err != nil {
 		c.Logger().Error("Set avatar ERR %s", err)
@@ -139,8 +156,17 @@ func (h *Handler) GetAvatar(c echo.Context, requestBody []byte, key string) erro
 		return c.String(http.StatusInternalServerError, resp)
 	}
 
+	tempPath, err := h.FilesService.DownloadFileTempPath(c.Request().Context(), storagePath)
+	if err != nil {
+		resp := "Cant generate temp path"
+		if key != "" {
+			resp, _ = crypto.StringEncrypt([]byte(resp), key)
+		}
+		return c.String(http.StatusInternalServerError, resp)
+	}
+
 	if key != "" {
-		storagePath, err = crypto.StringEncrypt([]byte(storagePath), key)
+		storagePath, err = crypto.StringEncrypt([]byte(tempPath), key)
 		if err != nil {
 			resp := "Decrypted error"
 			if key != "" {
@@ -150,5 +176,40 @@ func (h *Handler) GetAvatar(c echo.Context, requestBody []byte, key string) erro
 		}
 	}
 
-	return c.String(http.StatusOK, storagePath)
+	return c.String(http.StatusOK, tempPath)
+}
+
+func (h *Handler) GetFile(c echo.Context, requestBody []byte, key string, userLogin string) error {
+	var req GetFileRequest
+	if err := json.Unmarshal(requestBody, &req); err != nil {
+		h.Blocker.RegisterStrike(c.RealIP())
+		return c.JSON(http.StatusBadRequest, "Invalid JSON")
+	}
+
+	if req.StorageFilepath == "" {
+		h.Blocker.RegisterStrike(c.RealIP())
+		return c.String(http.StatusBadRequest, "Did not receive all server data")
+	}
+
+	if strings.Split(req.StorageFilepath, ".")[0] != userLogin {
+		resp := "Not access"
+		if key != "" {
+			resp, _ = crypto.StringEncrypt([]byte(resp), key)
+		}
+		return c.String(http.StatusInternalServerError, resp)
+	}
+
+	tempPath, err := h.FilesService.DownloadFileTempPath(c.Request().Context(), req.StorageFilepath)
+	if err != nil {
+		resp := "Cant generate temp path"
+		if key != "" {
+			resp, _ = crypto.StringEncrypt([]byte(resp), key)
+		}
+		return c.String(http.StatusInternalServerError, resp)
+	}
+
+	if key != "" {
+		tempPath, _ = crypto.StringEncrypt([]byte(tempPath), key)
+	}
+	return c.String(http.StatusOK, tempPath)
 }

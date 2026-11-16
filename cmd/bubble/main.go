@@ -47,6 +47,7 @@ Start on ports: 23099, 23098, 23097
 		e.POST("/getavatar", hand.RouterGetAvatar)
 		e.POST("/sendfile", hand.RouterSendFile)
 		e.POST("/delfile", hand.RouterDelFile)
+		e.POST("/getfile", hand.RouterGetFile)
 
 		if err := e.Start(":443"); err != nil {
 			e.Logger.Error("Start https Service: %s", err)

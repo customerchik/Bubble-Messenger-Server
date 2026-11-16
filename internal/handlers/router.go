@@ -115,6 +115,8 @@ func (rh *TLSHandler) Router(c echo.Context) error {
 		return rh.Handlers.SendFile(c, req.RequestBody, key, req.Login)
 	case "delfile":
 		return rh.Handlers.DelFile(c, req.RequestBody, key)
+	case "getfile":
+		return rh.Handlers.GetFile(c, req.RequestBody, key, req.Login)
 	default:
 		return c.NoContent(http.StatusNotFound)
 	}
@@ -220,4 +222,18 @@ func (rh *TLSHandler) RouterDelMessages(c echo.Context) error {
 	}
 
 	return rh.Handlers.DelMessages(c, "", login.Value)
+}
+
+func (rh *TLSHandler) RouterGetFile(c echo.Context) error {
+	body, err := io.ReadAll(c.Request().Body)
+	if err != nil {
+		return err
+	}
+
+	login, err := c.Cookie(cookie.UserLogin)
+	if err != nil {
+		return c.String(http.StatusBadRequest, "Cookie mycookie is missing")
+	}
+
+	return rh.Handlers.GetFile(c, body, "", login.Value)
 }

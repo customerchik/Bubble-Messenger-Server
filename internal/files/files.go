@@ -2,6 +2,7 @@ package files
 
 import (
 	"context"
+	"fmt"
 	"os"
 
 	pb "bubble/internal/files/proto"
@@ -10,14 +11,20 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 )
 
+const (
+	saveAvatar = "save_avatar"
+	saveFile   = "save_file"
+)
+
 type Client struct {
 	service pb.FilesServiceClient
 	conn    *grpc.ClientConn
 }
 
 type FilesService interface {
-	SaveFile(ctx context.Context, file []byte) (string, error)
-	SaveAvatar(ctx context.Context, file []byte) (string, error)
+	DownloadFileTempPath(ctx context.Context, filepath string) (string, error)
+	SaveAvatarTempPath(ctx context.Context, ch chan<- string)
+	SaveFileTempPath(ctx context.Context, ch chan<- string)
 	DelFile(ctx context.Context, storagePath string) error
 }
 
@@ -46,28 +53,60 @@ func (c *Client) Close() error {
 	return c.conn.Close()
 }
 
-func (c *Client) SaveFile(ctx context.Context, file []byte) (string, error) {
-	resp, err := c.service.Save(ctx, &pb.SaveFileRequest{
-		File:        file,
-		SaveForever: false,
+func (c *Client) DownloadFileTempPath(ctx context.Context, filepath string) (string, error) {
+	stream, err := c.service.TempPath(ctx, &pb.TempPathReqeust{
+		Info: filepath,
 	})
 	if err != nil {
 		return "", err
 	}
+	defer stream.CloseSend()
 
-	return resp.StoragePath, nil
+	resp, err := stream.Recv()
+	if err != nil {
+		return "", err
+	}
+
+	return resp.TempPath, nil
 }
 
-func (c *Client) SaveAvatar(ctx context.Context, file []byte) (string, error) {
-	resp, err := c.service.Save(ctx, &pb.SaveFileRequest{
-		File:        file,
-		SaveForever: true,
+func (c *Client) SaveAvatarTempPath(ctx context.Context, ch chan<- string) {
+	c.tempPath(ctx, saveAvatar, ch)
+}
+
+func (c *Client) SaveFileTempPath(ctx context.Context, ch chan<- string) {
+	c.tempPath(ctx, saveFile, ch)
+}
+
+func (c *Client) tempPath(ctx context.Context, filepath string, ch chan<- string) {
+	stream, err := c.service.TempPath(ctx, &pb.TempPathReqeust{
+		Info: filepath,
 	})
 	if err != nil {
-		return "", err
+		ch <- fmt.Sprintf("Error: %s", err)
+		return
 	}
+	defer stream.CloseSend()
 
-	return resp.StoragePath, nil
+	resp, err := stream.Recv()
+	if err != nil {
+		ch <- fmt.Sprintf("Error: %s", err)
+		return
+	}
+	ch <- resp.TempPath
+
+	resp, err = stream.Recv()
+	if err != nil {
+		ch <- fmt.Sprintf("Error: %s", err)
+		return
+	}
+	if resp.StoragePath != "" {
+		ch <- resp.StoragePath
+		return
+	} else {
+		ch <- "Error"
+		return
+	}
 }
 
 func (c *Client) DelFile(ctx context.Context, storagePath string) error {
