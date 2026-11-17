@@ -114,7 +114,7 @@ func (rh *TLSHandler) Router(c echo.Context) error {
 	case "sendfile":
 		return rh.Handlers.SendFile(c, req.RequestBody, key, req.Login)
 	case "delfile":
-		return rh.Handlers.DelFile(c, req.RequestBody, key)
+		return rh.Handlers.DelFile(c, req.RequestBody, key, req.Login)
 	case "getfile":
 		return rh.Handlers.GetFile(c, req.RequestBody, key, req.Login)
 	default:
@@ -157,7 +157,12 @@ func (rh *TLSHandler) RouterDelFile(c echo.Context) error {
 		return err
 	}
 
-	return rh.Handlers.DelFile(c, body, "")
+	login, err := c.Cookie(cookie.UserLogin)
+	if err != nil {
+		return c.String(http.StatusBadRequest, "Cookie mycookie is missing")
+	}
+
+	return rh.Handlers.DelFile(c, body, "", login.Value)
 }
 
 func (rh *TLSHandler) RouterSetAvatar(c echo.Context) error {
