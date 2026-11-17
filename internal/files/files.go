@@ -97,7 +97,7 @@ func (c *Client) tempPath(ctx context.Context, filepath string, ch chan<- string
 
 	resp, err = stream.Recv()
 	if err != nil {
-		ch <- fmt.Sprintf("Error: %s", err)
+		ch <- fmt.Sprintf("Error send recv: %s", err)
 		return
 	}
 	if resp.StoragePath != "" {
