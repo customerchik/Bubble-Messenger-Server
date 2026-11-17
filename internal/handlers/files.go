@@ -51,6 +51,7 @@ func (h *Handler) SendFile(c echo.Context, requestBody []byte, key string, userL
 	if strings.Contains(tempPath, "Error") {
 		return c.NoContent(http.StatusInternalServerError)
 	} else {
+		c.Response().WriteHeader(http.StatusOK)
 		if _, err := c.Response().Write([]byte(tempPath + "\n")); err != nil {
 			return err
 		}
@@ -59,6 +60,13 @@ func (h *Handler) SendFile(c echo.Context, requestBody []byte, key string, userL
 	}
 
 	fileStoragePath := <-statusCh
+	if strings.Contains(fileStoragePath, "Error") {
+		if _, err := c.Response().Write([]byte(fileStoragePath + "\n")); err != nil {
+			return err
+		}
+
+		return nil
+	}
 
 	if err := h.MessengerService.SendFile(c.Request().Context(), h.UsersService, userLogin, req.Receiver, req.FileName, fileStoragePath); err != nil {
 		go h.FilesService.DelFile(context.Background(), fileStoragePath)
@@ -67,13 +75,15 @@ func (h *Handler) SendFile(c echo.Context, requestBody []byte, key string, userL
 		if key != "" {
 			resp, _ = crypto.StringEncrypt([]byte(resp), key)
 		}
-		return c.String(http.StatusInternalServerError, resp)
+		c.Response().Write([]byte(resp))
+		return nil
 	}
 
-	return c.NoContent(http.StatusOK)
+	c.Response().Write([]byte("Success"))
+	return nil
 }
 
-func (h *Handler) DelFile(c echo.Context, requestBody []byte, key string) error {
+func (h *Handler) DelFile(c echo.Context, requestBody []byte, key string, userLogin string) error {
 	var req DelFileRequest
 	if err := json.Unmarshal(requestBody, &req); err != nil {
 		h.Blocker.RegisterStrike(c.RealIP())
@@ -83,6 +93,17 @@ func (h *Handler) DelFile(c echo.Context, requestBody []byte, key string) error 
 	if req.Filename == "" {
 		h.Blocker.RegisterStrike(c.RealIP())
 		return c.String(http.StatusBadRequest, "Did not receive all server data")
+	}
+
+	splittedFilename := strings.Split(req.Filename, ".")
+	if len(splittedFilename) == 2 {
+		if splittedFilename[1] != userLogin {
+			resp := "Not access"
+			if key != "" {
+				resp, _ = crypto.StringEncrypt([]byte(resp), key)
+			}
+			return c.String(http.StatusBadRequest, resp)
+		}
 	}
 
 	if err := h.FilesService.DelFile(c.Request().Context(), req.Filename); err != nil {
@@ -111,6 +132,7 @@ func (h *Handler) SetAvatar(c echo.Context, requestBody []byte, key string, user
 	if strings.Contains(tempPath, "Error") {
 		return c.NoContent(http.StatusInternalServerError)
 	} else {
+		c.Response().WriteHeader(http.StatusOK)
 		if _, err := c.Response().Write([]byte(tempPath + "\n")); err != nil {
 			return err
 		}
@@ -119,6 +141,13 @@ func (h *Handler) SetAvatar(c echo.Context, requestBody []byte, key string, user
 	}
 
 	storageAvatarPath := <-statusCh
+	if strings.Contains(storageAvatarPath, "Error") {
+		if _, err := c.Response().Write([]byte(storageAvatarPath + "\n")); err != nil {
+			return err
+		}
+
+		return nil
+	}
 
 	if err := h.UsersService.SetAvatar(c.Request().Context(), userLogin, storageAvatarPath); err != nil {
 		c.Logger().Error("Set avatar ERR %s", err)
@@ -131,7 +160,8 @@ func (h *Handler) SetAvatar(c echo.Context, requestBody []byte, key string, user
 
 	c.Logger().Infof("Success save avatar by %s", userLogin)
 
-	return c.NoContent(http.StatusOK)
+	c.Response().Write([]byte("Success"))
+	return nil
 }
 
 func (h *Handler) GetAvatar(c echo.Context, requestBody []byte, key string) error {
@@ -166,7 +196,7 @@ func (h *Handler) GetAvatar(c echo.Context, requestBody []byte, key string) erro
 	}
 
 	if key != "" {
-		storagePath, err = crypto.StringEncrypt([]byte(tempPath), key)
+		tempPath, err = crypto.StringEncrypt([]byte(tempPath), key)
 		if err != nil {
 			resp := "Decrypted error"
 			if key != "" {
@@ -191,7 +221,7 @@ func (h *Handler) GetFile(c echo.Context, requestBody []byte, key string, userLo
 		return c.String(http.StatusBadRequest, "Did not receive all server data")
 	}
 
-	if strings.Split(req.StorageFilepath, ".")[0] != userLogin {
+	if strings.Split(req.StorageFilepath, ".")[1] != userLogin {
 		resp := "Not access"
 		if key != "" {
 			resp, _ = crypto.StringEncrypt([]byte(resp), key)
