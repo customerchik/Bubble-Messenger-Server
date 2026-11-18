@@ -889,6 +889,18 @@
       return btoa(binary);
     }
 
+    function fileServerBase() {
+      const host = location.hostname || 'localhost';
+      return `http://${host}:8081`;
+    }
+
+    function normalizePath(path) {
+      if (!path) return null;
+      const p = String(path).trim();
+      if (!p || p === 'null' || p === 'undefined') return null;
+      return p.startsWith('/') ? p : '/' + p;
+    }
+
     function toast(text, isError = false) {
       const el = document.getElementById('toast');
       el.textContent = text;
@@ -1016,70 +1028,142 @@
       avatarInput.click();
     });
 
+    /**
+     * Установка аватара (новый протокол):
+     * 1. POST /setavatar (тело пустое)
+     * 2. Стрим: tempPath + "\n", затем "Success"
+     * 3. POST на :8081 + tempPath  body: { File: base64, ReceiverLogin: "" }
+     */
     avatarInput.addEventListener('change', async () => {
       const file = avatarInput.files?.[0];
       avatarInput.value = '';
       if (!file) return;
+
       if (!file.type.startsWith('image/')) {
         toast('Выберите изображение', true);
         return;
       }
+
       try {
-        const buf = await file.arrayBuffer();
-        const b64 = arrayBufferToBase64(buf);
         const res = await fetch('/setavatar', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
           credentials: 'include',
-          body: JSON.stringify({ avatar: b64 }),
         });
-        if (res.ok) {
-          toast('Аватар обновлён');
-          const el = document.getElementById('myAvatar');
-          // Local preview immediately
-          const localUrl = URL.createObjectURL(file);
-          el.textContent = '';
-          const img = document.createElement('img');
-          img.src = localUrl;
-          img.alt = 'avatar';
-          el.appendChild(img);
-          // Bust HTTP + local path cache, then reload from server
-          avatarBust = Date.now();
-          if (myLogin) {
-            delete avatarCache[myLogin];
-            saveAvatarCache(avatarCache);
-            setTimeout(() => applyAvatar(el, myLogin, myName, true), 500);
-          }
-        } else {
+
+        if (!res.ok) {
           let err = `Ошибка ${res.status}`;
           try {
             const t = await res.text();
             try {
               const j = JSON.parse(t);
               err = typeof j === 'string' ? j : (j.message || j.error || t);
-            } catch { err = t || err; }
+            } catch {
+              err = t || err;
+            }
           } catch {}
           toast(err, true);
+          return;
         }
-      } catch {
-        toast('Не удалось загрузить аватар', true);
+
+        if (!res.body) {
+          toast('Пустой ответ сервера', true);
+          return;
+        }
+
+        const reader = res.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = '';
+        let tempPath = null;
+
+        while (tempPath === null) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          buffer += decoder.decode(value, { stream: true });
+          const nl = buffer.indexOf('\n');
+          if (nl !== -1) {
+            tempPath = buffer.slice(0, nl).trim();
+            buffer = buffer.slice(nl + 1);
+            break;
+          }
+        }
+
+        tempPath = normalizePath(tempPath);
+        if (!tempPath) {
+          toast('Не получен временный путь', true);
+          try { reader.cancel(); } catch {}
+          return;
+        }
+
+        const fileBuffer = await file.arrayBuffer();
+        const b64 = arrayBufferToBase64(fileBuffer);
+
+        const uploadRes = await fetch(fileServerBase() + tempPath, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({
+            File: b64,
+            ReceiverLogin: '',
+          }),
+        });
+
+        if (!uploadRes.ok) {
+          toast(`Ошибка загрузки файла: ${uploadRes.status}`, true);
+          try { reader.cancel(); } catch {}
+          return;
+        }
+
+        let gotSuccess = buffer.includes('Success');
+        while (!gotSuccess) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          buffer += decoder.decode(value, { stream: true });
+          if (buffer.includes('Success')) {
+            gotSuccess = true;
+            break;
+          }
+        }
+
+        try { reader.cancel(); } catch {}
+
+        if (gotSuccess) {
+          toast('Аватар обновлён');
+          const el = document.getElementById('myAvatar');
+          const localUrl = URL.createObjectURL(file);
+          const prev = el.querySelector('img');
+          if (prev && prev.src && prev.src.startsWith('blob:')) {
+            try { URL.revokeObjectURL(prev.src); } catch {}
+          }
+          el.textContent = '';
+          const img = document.createElement('img');
+          img.src = localUrl;
+          img.alt = 'avatar';
+          el.appendChild(img);
+
+          // сброс кэша и перезагрузка с сервера
+          if (myLogin) {
+            if (avatarCache[myLogin] && avatarCache[myLogin].blobUrl) {
+              try { URL.revokeObjectURL(avatarCache[myLogin].blobUrl); } catch {}
+            }
+            delete avatarCache[myLogin];
+            saveAvatarCache(avatarCache);
+            setTimeout(() => applyAvatar(el, myLogin, myName, true), 600);
+          }
+        } else {
+          toast('Не получено подтверждение Success', true);
+        }
+      } catch (e) {
+        console.error(e);
+        if (e instanceof TypeError) {
+          toast('Сеть/CORS: не удалось связаться с файловым сервером (:8081)', true);
+        } else {
+          toast('Не удалось загрузить аватар', true);
+        }
       }
     });
 
-    // ─── Avatars ──────────────────────────────────────────
-    let avatarBust = Date.now();
-
-    function avatarUrlFromPath(path) {
-      if (!path) return null;
-      if (path.startsWith('http://') || path.startsWith('https://')) {
-        const sep = path.includes('?') ? '&' : '?';
-        return path + sep + 't=' + avatarBust;
-      }
-      // Same host, port 8081
-      const host = location.hostname || 'localhost';
-      const p = path.startsWith('/') ? path : '/' + path;
-      return `http://${host}:8081${p}?t=${avatarBust}`;
-    }
+    // ─── Avatars (новый протокол) ─────────────────────────
+    // getavatar → tempPath → GET :8081+tempPath → blob URL
 
     function parseAvatarPath(text) {
       if (!text) return null;
@@ -1093,13 +1177,22 @@
       } catch { /* plain string */ }
       path = String(path || '').replace(/^"|"$/g, '').trim();
       if (!path || path === 'null' || path === 'undefined') return null;
-      return path;
+      return normalizePath(path);
     }
 
-    async function fetchAvatarPath(login, forceRefresh) {
-      if (!forceRefresh && avatarCache[login] && avatarCache[login].path) {
-        return avatarCache[login].path;
+    /**
+     * 1. POST /getavatar { LoginForSearch }
+     * 2. тело ответа — временный путь
+     * 3. GET :8081 + tempPath → байты
+     * Возвращает object URL или null.
+     */
+    async function loadAvatarBlobUrl(login, forceRefresh) {
+      if (!login) return null;
+
+      if (!forceRefresh && avatarCache[login] && avatarCache[login].blobUrl) {
+        return avatarCache[login].blobUrl;
       }
+
       try {
         const res = await fetch('/getavatar', {
           method: 'POST',
@@ -1108,16 +1201,39 @@
           body: JSON.stringify({ LoginForSearch: login }),
         });
         if (!res.ok) return null;
-        const text = await res.text();
-        const path = parseAvatarPath(text);
-        if (!path) {
+
+        const tempPath = parseAvatarPath(await res.text());
+        if (!tempPath) {
+          if (avatarCache[login]?.blobUrl) {
+            try { URL.revokeObjectURL(avatarCache[login].blobUrl); } catch {}
+          }
           delete avatarCache[login];
           saveAvatarCache(avatarCache);
           return null;
         }
-        avatarCache[login] = { path };
-        saveAvatarCache(avatarCache);
-        return path;
+
+        const fileRes = await fetch(fileServerBase() + tempPath, {
+          method: 'GET',
+          credentials: 'include',
+        });
+        if (!fileRes.ok) return null;
+
+        const blob = await fileRes.blob();
+        if (!blob || blob.size === 0) return null;
+
+        if (avatarCache[login]?.blobUrl) {
+          try { URL.revokeObjectURL(avatarCache[login].blobUrl); } catch {}
+        }
+
+        const url = URL.createObjectURL(blob);
+        avatarCache[login] = { path: tempPath, blobUrl: url };
+        // blob URL нельзя надёжно хранить в localStorage — кэшируем только path
+        try {
+          const persist = loadAvatarCache();
+          persist[login] = { path: tempPath };
+          saveAvatarCache(persist);
+        } catch {}
+        return url;
       } catch {
         return null;
       }
@@ -1127,13 +1243,7 @@
       if (!el || !login) return;
       const letter = (fallbackLetter || login || '?').charAt(0).toUpperCase();
 
-      const path = await fetchAvatarPath(login, !!forceRefresh);
-      if (!path) {
-        // keep letter only if no image
-        if (!el.querySelector('img')) el.textContent = letter;
-        return;
-      }
-      const url = avatarUrlFromPath(path);
+      const url = await loadAvatarBlobUrl(login, !!forceRefresh);
       if (!url) {
         if (!el.querySelector('img')) el.textContent = letter;
         return;
@@ -1142,17 +1252,14 @@
       const img = document.createElement('img');
       img.alt = login;
       img.onload = () => {
+        const prev = el.querySelector('img');
+        if (prev && prev.src && prev.src.startsWith('blob:') && prev.src !== url) {
+          try { URL.revokeObjectURL(prev.src); } catch {}
+        }
         el.textContent = '';
         el.appendChild(img);
       };
       img.onerror = () => {
-        // fallback: try same path on current origin (without forced :8081)
-        if (!img.dataset.triedOrigin) {
-          img.dataset.triedOrigin = '1';
-          const p = path.startsWith('/') ? path : '/' + path;
-          img.src = p + (p.includes('?') ? '&' : '?') + 't=' + avatarBust;
-          return;
-        }
         img.remove();
         if (!el.querySelector('img')) el.textContent = letter;
       };
@@ -1239,12 +1346,82 @@
       document.getElementById('msgInput').focus();
     }
 
-    function fileDownloadUrl(storagePath) {
-      if (!storagePath) return '#';
-      if (storagePath.startsWith('http://') || storagePath.startsWith('https://')) return storagePath;
-      const host = location.hostname || 'localhost';
-      const p = storagePath.startsWith('/') ? storagePath : '/' + storagePath;
-      return `http://${host}:8081${p}`;
+    /**
+     * Получение файла (новый протокол, как у аватара):
+     * 1. POST /getfile  body: { StorageFilepath }
+     * 2. Ответ — временный путь (status OK)
+     * 3. GET :8081 + tempPath → байты файла
+     */
+    async function downloadFile(storagePath, fileName) {
+      if (!storagePath) {
+        toast('Нет пути к файлу', true);
+        return;
+      }
+
+      try {
+        const res = await fetch('/getfile', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({ StorageFilepath: storagePath }),
+        });
+
+        if (!res.ok) {
+          let err = `Ошибка ${res.status}`;
+          try {
+            const t = await res.text();
+            try {
+              const j = JSON.parse(t);
+              err = typeof j === 'string' ? j : (j.message || j.error || t);
+            } catch {
+              err = t || err;
+            }
+          } catch {}
+          toast(err, true);
+          return;
+        }
+
+        const tempPath = normalizePath(await res.text());
+        if (!tempPath) {
+          toast('Не получен временный путь', true);
+          return;
+        }
+
+        const fileRes = await fetch(fileServerBase() + tempPath, {
+          method: 'GET',
+          credentials: 'include',
+        });
+
+        if (!fileRes.ok) {
+          toast(`Ошибка скачивания: ${fileRes.status}`, true);
+          return;
+        }
+
+        const blob = await fileRes.blob();
+        if (!blob || blob.size === 0) {
+          toast('Пустой файл', true);
+          return;
+        }
+
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = fileName || 'file';
+        a.rel = 'noopener';
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        setTimeout(() => {
+          try { URL.revokeObjectURL(url); } catch {}
+        }, 60_000);
+      } catch (e) {
+        console.error(e);
+        if (e instanceof TypeError) {
+          toast('Сеть/CORS: не удалось связаться с файловым сервером (:8081)', true);
+        } else {
+          toast('Не удалось скачать файл', true);
+        }
+      }
     }
 
     /** Parse incoming file marker: p\filename\storage/path */
@@ -1277,11 +1454,11 @@
         box.innerHTML = '';
         return;
       }
-      box.innerHTML = chat.messages.map(m => {
+      box.innerHTML = chat.messages.map((m, idx) => {
         if (m.isFile) {
           const name = escapeHtml(m.fileName || m.text || 'Файл');
           const dl = m.storagePath
-            ? `<a class="file-download" href="${escapeHtml(fileDownloadUrl(m.storagePath))}" target="_blank" rel="noopener" download="${name}">⬇ Скачать</a>`
+            ? `<button type="button" class="file-download" data-file-idx="${idx}">⬇ Скачать</button>`
             : '';
           return `
             <div class="msg ${m.outgoing ? 'outgoing' : 'incoming'} file">
@@ -1299,6 +1476,23 @@
             <div class="time">${formatTime(m.time)}</div>
           </div>`;
       }).join('');
+
+      box.querySelectorAll('.file-download[data-file-idx]').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const i = Number(btn.getAttribute('data-file-idx'));
+          const msg = chat.messages[i];
+          if (!msg || !msg.storagePath) return;
+          const original = btn.textContent;
+          btn.disabled = true;
+          btn.textContent = '…';
+          downloadFile(msg.storagePath, msg.fileName || msg.text || 'file')
+            .finally(() => {
+              btn.disabled = false;
+              btn.textContent = original || '⬇ Скачать';
+            });
+        });
+      });
+
       box.scrollTop = box.scrollHeight;
     }
 
@@ -1606,44 +1800,35 @@
       filePreview.classList.remove('visible');
     });
 
+    /**
+     * Отправка файла (новый протокол, как у аватара):
+     * 1. POST /sendfile  body: { Receiver, FileName }  (без байтов)
+     * 2. Стрим: tempPath + "\n", Flush; позже "Success"
+     * 3. POST :8081 + tempPath  body: { File: base64, ReceiverLogin }
+     * 4. Успех: upload status 200 + строка "Success" в первом стриме
+     */
     async function sendFile() {
       if (!currentChatLogin || !pendingFile) return;
       hideComposerError();
       sendBtn.disabled = true;
 
-      try {
-        const buf = await pendingFile.arrayBuffer();
-        const b64 = arrayBufferToBase64(buf);
+      const file = pendingFile;
+      const receiver = currentChatLogin;
+      const fileName = file.name;
 
+      try {
+        // 1. Запрос временного пути
         const res = await fetch('/sendfile', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           credentials: 'include',
           body: JSON.stringify({
-            Receiver: currentChatLogin,
-            FileName: pendingFile.name,
-            File: b64,
+            Receiver: receiver,
+            FileName: fileName,
           }),
         });
 
-        if (res.ok) {
-          const time = Date.now();
-          addMessage(currentChatLogin, {
-            id: `file_${time}`,
-            text: pendingFile.name,
-            fileName: pendingFile.name,
-            time,
-            outgoing: true,
-            isFile: true,
-          });
-          pendingFile = null;
-          fileInput.value = '';
-          filePreview.classList.remove('visible');
-          msgInput.value = '';
-          renderMessages();
-          renderChatList();
-          toast('Файл отправлен');
-        } else {
+        if (!res.ok) {
           let errText = `Ошибка ${res.status}`;
           try {
             const t = await res.text();
@@ -1655,9 +1840,101 @@
             }
           } catch {}
           showComposerError(errText);
+          return;
         }
+
+        if (!res.body) {
+          showComposerError('Пустой ответ сервера');
+          return;
+        }
+
+        const reader = res.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = '';
+        let tempPath = null;
+
+        // 2. Читаем tempPath до первой \n
+        while (tempPath === null) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          buffer += decoder.decode(value, { stream: true });
+          const nl = buffer.indexOf('\n');
+          if (nl !== -1) {
+            tempPath = buffer.slice(0, nl).trim();
+            buffer = buffer.slice(nl + 1);
+            break;
+          }
+        }
+
+        tempPath = normalizePath(tempPath);
+        if (!tempPath) {
+          showComposerError('Не получен временный путь');
+          try { reader.cancel(); } catch {}
+          return;
+        }
+
+        // 3. Загрузка байтов на :8081
+        const buf = await file.arrayBuffer();
+        const b64 = arrayBufferToBase64(buf);
+
+        const uploadRes = await fetch(fileServerBase() + tempPath, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({
+            File: b64,
+            ReceiverLogin: receiver,
+          }),
+        });
+
+        if (!uploadRes.ok) {
+          showComposerError(`Ошибка загрузки файла: ${uploadRes.status}`);
+          try { reader.cancel(); } catch {}
+          return;
+        }
+
+        // 4. Ждём "Success" в первом стриме
+        let gotSuccess = buffer.includes('Success');
+        while (!gotSuccess) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          buffer += decoder.decode(value, { stream: true });
+          if (buffer.includes('Success')) {
+            gotSuccess = true;
+            break;
+          }
+        }
+
+        try { reader.cancel(); } catch {}
+
+        if (!gotSuccess) {
+          showComposerError('Не получено подтверждение Success');
+          return;
+        }
+
+        const time = Date.now();
+        addMessage(receiver, {
+          id: `file_${time}`,
+          text: fileName,
+          fileName: fileName,
+          time,
+          outgoing: true,
+          isFile: true,
+        });
+        pendingFile = null;
+        fileInput.value = '';
+        filePreview.classList.remove('visible');
+        msgInput.value = '';
+        renderMessages();
+        renderChatList();
+        toast('Файл отправлен');
       } catch (e) {
-        showComposerError('Не удалось отправить файл');
+        console.error(e);
+        if (e instanceof TypeError) {
+          showComposerError('Сеть/CORS: не удалось связаться с файловым сервером (:8081)');
+        } else {
+          showComposerError('Не удалось отправить файл');
+        }
       } finally {
         sendBtn.disabled = false;
       }

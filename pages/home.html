@@ -1,10 +1,12 @@
 <!DOCTYPE html>
 <html lang="ru">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Bubble — Мессенджер с открытым исходным кодом</title>
-  <meta name="description" content="Bubble — открытый мессенджер, который отлично работает на нестабильном интернете. Минимальное хранение данных, собственное шифрование и прозрачность.">
+  <meta name="description"
+    content="Bubble — открытый мессенджер, который отлично работает на нестабильном интернете. Минимальное хранение данных, собственное шифрование и прозрачность.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -26,9 +28,15 @@
       --radius: 20px;
     }
 
-    * { margin: 0; padding: 0; box-sizing: border-box; }
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
 
-    html { scroll-behavior: smooth; }
+    html {
+      scroll-behavior: smooth;
+    }
 
     body {
       font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
@@ -69,10 +77,23 @@
     }
 
     @keyframes float {
-      0% { transform: translateY(100vh) scale(0.6); opacity: 0; }
-      10% { opacity: 0.7; }
-      90% { opacity: 0.5; }
-      100% { transform: translateY(-20vh) scale(1); opacity: 0; }
+      0% {
+        transform: translateY(100vh) scale(0.6);
+        opacity: 0;
+      }
+
+      10% {
+        opacity: 0.7;
+      }
+
+      90% {
+        opacity: 0.5;
+      }
+
+      100% {
+        transform: translateY(-20vh) scale(1);
+        opacity: 0;
+      }
     }
 
     header {
@@ -128,7 +149,9 @@
       background: rgba(255, 255, 255, 0.4);
     }
 
-    .logo-icon span { font-size: 1.1rem; }
+    .logo-icon span {
+      font-size: 1.1rem;
+    }
 
     .auth-area {
       display: flex;
@@ -151,7 +174,9 @@
       user-select: none;
     }
 
-    .user-info.visible { display: flex; }
+    .user-info.visible {
+      display: flex;
+    }
 
     .user-info:hover {
       background: rgba(59, 158, 255, 0.25);
@@ -185,8 +210,15 @@
       line-height: 1.25;
     }
 
-    .user-name { font-weight: 600; color: var(--text); }
-    .user-login { font-size: 0.75rem; color: var(--text-muted); }
+    .user-name {
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .user-login {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
 
     /* User popup menu */
     .user-menu {
@@ -204,7 +236,9 @@
       z-index: 200;
     }
 
-    .user-menu.visible { display: block; }
+    .user-menu.visible {
+      display: block;
+    }
 
     .user-menu button {
       width: 100%;
@@ -228,7 +262,10 @@
       background: var(--accent-soft);
     }
 
-    .user-menu button.danger { color: var(--error); }
+    .user-menu button.danger {
+      color: var(--error);
+    }
+
     .user-menu button.danger:hover {
       background: var(--error-bg);
     }
@@ -240,7 +277,9 @@
       color: var(--error);
     }
 
-    .user-menu .menu-error.visible { display: block; }
+    .user-menu .menu-error.visible {
+      display: block;
+    }
 
     .user-menu .menu-divider {
       height: 1px;
@@ -339,7 +378,9 @@
       justify-content: center;
     }
 
-    section { margin-bottom: 3.5rem; }
+    section {
+      margin-bottom: 3.5rem;
+    }
 
     .section-title {
       font-size: 1.6rem;
@@ -371,15 +412,22 @@
       transition: border-color 0.2s;
     }
 
-    .card:hover { border-color: rgba(59, 158, 255, 0.4); }
+    .card:hover {
+      border-color: rgba(59, 158, 255, 0.4);
+    }
 
     .card p {
       color: var(--text-muted);
       margin-bottom: 1rem;
     }
 
-    .card p:last-child { margin-bottom: 0; }
-    .card strong { color: var(--text); }
+    .card p:last-child {
+      margin-bottom: 0;
+    }
+
+    .card strong {
+      color: var(--text);
+    }
 
     .features {
       display: grid;
@@ -543,7 +591,9 @@
       flex-shrink: 0;
     }
 
-    .secure-list strong { color: var(--text); }
+    .secure-list strong {
+      color: var(--text);
+    }
 
     .note {
       margin-top: 1.5rem;
@@ -561,7 +611,9 @@
       font-weight: 500;
     }
 
-    .note a:hover { text-decoration: underline; }
+    .note a:hover {
+      text-decoration: underline;
+    }
 
     footer {
       position: relative;
@@ -578,7 +630,9 @@
       text-decoration: none;
     }
 
-    footer a:hover { text-decoration: underline; }
+    footer a:hover {
+      text-decoration: underline;
+    }
 
     /* Toast */
     .toast {
@@ -594,20 +648,39 @@
       font-size: 0.9rem;
       z-index: 300;
       transition: transform 0.3s ease;
-      box-shadow: 0 10px 40px rgba(0,0,0,0.4);
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
       max-width: 90%;
     }
-    .toast.show { transform: translateX(-50%) translateY(0); }
-    .toast.error { border-color: var(--error-border); color: var(--error); }
+
+    .toast.show {
+      transform: translateX(-50%) translateY(0);
+    }
+
+    .toast.error {
+      border-color: var(--error-border);
+      color: var(--error);
+    }
 
     @media (max-width: 600px) {
-      .header-inner { padding: 0.85rem 1rem; }
-      .hero { padding: 2rem 0 3rem; }
-      .user-info { padding: 0.35rem 0.75rem 0.35rem 0.4rem; }
-      .user-meta { display: none; }
+      .header-inner {
+        padding: 0.85rem 1rem;
+      }
+
+      .hero {
+        padding: 2rem 0 3rem;
+      }
+
+      .user-info {
+        padding: 0.35rem 0.75rem 0.35rem 0.4rem;
+      }
+
+      .user-meta {
+        display: none;
+      }
     }
   </style>
 </head>
+
 <body>
   <div class="bubbles" id="bubbles" aria-hidden="true"></div>
 
@@ -698,22 +771,30 @@
       </h2>
       <div class="card">
         <p>
-          Bubble — проект с <strong>открытым исходным кодом</strong> как клиента, так и сайта.
+          Bubble — проект с <strong>открытым исходный код</strong> как клиента, так и сайта.
           Вы можете изучить, как именно работает обмен данными и что отправляется на сервер.
         </p>
         <div class="links">
-          <a href="https://github.com/mongolianpes/Bubble-Messenger-Server" target="_blank" rel="noopener" class="link-card">
+          <a href="https://github.com/mongolianpes/Bubble-Messenger-Server" target="_blank" rel="noopener"
+            class="link-card">
             <div class="gh-icon">
-              <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+              <svg viewBox="0 0 16 16" aria-hidden="true">
+                <path
+                  d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z" />
+              </svg>
             </div>
             <div class="link-text">
               <strong>Серверная часть</strong>
               <span>Bubble-Messenger-Server</span>
             </div>
           </a>
-          <a href="https://github.com/mongolianpes/Bubble-Messenger-Client" target="_blank" rel="noopener" class="link-card">
+          <a href="https://github.com/mongolianpes/Bubble-Messenger-Client" target="_blank" rel="noopener"
+            class="link-card">
             <div class="gh-icon">
-              <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+              <svg viewBox="0 0 16 16" aria-hidden="true">
+                <path
+                  d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z" />
+              </svg>
             </div>
             <div class="link-text">
               <strong>Клиент (мобильные устройства)</strong>
@@ -786,7 +867,8 @@
         <p>Дополнительно они защищают от повторной отправки запросов злоумышленником:</p>
         <ul class="secure-list" style="margin-top: 0.75rem;">
           <li>в каждом запросе передаётся <strong>время отправки</strong> и <strong>случайная строка</strong></li>
-          <li>сервер сохраняет случайную строку запроса на <strong>30 секунд</strong> и отклоняет любые повторные запросы с этой же строкой в течение этого времени</li>
+          <li>сервер сохраняет случайную строку запроса на <strong>30 секунд</strong> и отклоняет любые повторные
+            запросы с этой же строкой в течение этого времени</li>
           <li>если с момента отправки прошло слишком много времени, запрос также отклоняется</li>
         </ul>
       </div>
@@ -809,9 +891,11 @@
 
       <div class="note">
         Подробнее о протоколах, реализации и архитектуре можно узнать на
-        <a href="https://github.com/mongolianpes/Bubble-Messenger-Server" target="_blank" rel="noopener">GitHub серверной части</a>
+        <a href="https://github.com/mongolianpes/Bubble-Messenger-Server" target="_blank" rel="noopener">GitHub
+          серверной части</a>
         и
-        <a href="https://github.com/mongolianpes/Bubble-Messenger-Client" target="_blank" rel="noopener">клиентской части</a>.
+        <a href="https://github.com/mongolianpes/Bubble-Messenger-Client" target="_blank" rel="noopener">клиентской
+          части</a>.
       </div>
     </section>
   </main>
@@ -898,32 +982,16 @@
       return btoa(binary);
     }
 
-    let avatarBust = Date.now();
-
-    function avatarUrlFromPath(path) {
-      if (!path) return null;
-      if (path.startsWith('http://') || path.startsWith('https://')) {
-        const sep = path.includes('?') ? '&' : '?';
-        return path + sep + 't=' + avatarBust;
-      }
+    function fileServerBase() {
       const host = location.hostname || 'localhost';
-      const p = path.startsWith('/') ? path : '/' + path;
-      return `http://${host}:8081${p}?t=${avatarBust}`;
+      return `http://${host}:8081`;
     }
 
-    function parseAvatarPath(text) {
-      if (!text) return null;
-      let path = String(text).trim();
-      try {
-        const j = JSON.parse(path);
-        if (typeof j === 'string') path = j;
-        else if (j && typeof j === 'object') {
-          path = j.path || j.Path || j.avatar || j.Avatar || j.url || j.URL || '';
-        }
-      } catch {}
-      path = String(path || '').replace(/^"|"$/g, '').trim();
-      if (!path || path === 'null' || path === 'undefined') return null;
-      return path;
+    function normalizePath(path) {
+      if (!path) return null;
+      const p = String(path).trim();
+      if (!p || p === 'null' || p === 'undefined') return null;
+      return p.startsWith('/') ? p : '/' + p;
     }
 
     // Auth UI
@@ -939,7 +1007,13 @@
 
     let myLogin = '';
 
-    async function loadMyAvatar(login, forceRefresh) {
+    /**
+     * Получение аватара (новый протокол):
+     * 1. POST /getavatar  body: { LoginForSearch: login }
+     * 2. В теле ответа — временный путь (tempPath)
+     * 3. GET/запрос на :8081 + tempPath → байты аватара
+     */
+    async function loadMyAvatar(login) {
       if (!login) return;
       try {
         const res = await fetch('/getavatar', {
@@ -949,28 +1023,39 @@
           body: JSON.stringify({ LoginForSearch: login }),
         });
         if (!res.ok) return;
-        const text = await res.text();
-        const path = parseAvatarPath(text);
-        if (!path) return;
-        const url = avatarUrlFromPath(path);
-        if (!url) return;
+
+        const tempPath = normalizePath(await res.text());
+        if (!tempPath) return;
+
+        const fileRes = await fetch(fileServerBase() + tempPath, {
+          method: 'GET',
+          credentials: 'include',
+        });
+        if (!fileRes.ok) return;
+
+        const blob = await fileRes.blob();
+        if (!blob || blob.size === 0) return;
+
+        const url = URL.createObjectURL(blob);
         const img = document.createElement('img');
         img.alt = login;
         img.onload = () => {
           userAvatar.textContent = '';
+          // revoke previous object URL if any
+          const prev = userAvatar.querySelector('img');
+          if (prev && prev.src && prev.src.startsWith('blob:')) {
+            try { URL.revokeObjectURL(prev.src); } catch { }
+          }
           userAvatar.appendChild(img);
         };
         img.onerror = () => {
-          if (!img.dataset.triedOrigin) {
-            img.dataset.triedOrigin = '1';
-            const p = path.startsWith('/') ? path : '/' + path;
-            img.src = p + (p.includes('?') ? '&' : '?') + 't=' + avatarBust;
-            return;
-          }
+          try { URL.revokeObjectURL(url); } catch { }
           img.remove();
         };
         img.src = url;
-      } catch {}
+      } catch (e) {
+        // silent — avatar is optional
+      }
     }
 
     (function checkAuth() {
@@ -1027,7 +1112,7 @@
         localStorage.removeItem('bubble_chats_v1');
         localStorage.removeItem('bubble_avatars_v1');
         sessionStorage.removeItem('bubble_last_chat');
-      } catch {}
+      } catch { }
       window.location.href = '/';
     });
 
@@ -1037,6 +1122,19 @@
       avatarInput.click();
     });
 
+    /**
+     * Установка аватара (новый протокол):
+     * 1. POST /setavatar  (тело пустое / без файла)
+     *    - при ошибке status != 200
+     *    - при успехе сервер стримит: tempPath + "\n", Flush, затем (после загрузки файла) "Success"
+     * 2. Клиент читает tempPath из стрима
+     * 3. POST на :8081 + tempPath
+     *    body (JSON FilesRequest):
+     *      { File: <base64 байтов>, ReceiverLogin: "" }
+     * 4. Успех, если:
+     *    - второй запрос вернул status OK
+     *    - в первом ответе пришла строка "Success"
+     */
     avatarInput.addEventListener('change', async () => {
       const file = avatarInput.files?.[0];
       avatarInput.value = '';
@@ -1048,29 +1146,13 @@
       }
 
       try {
-        const buf = await file.arrayBuffer();
-        const b64 = arrayBufferToBase64(buf);
-
+        // 1. Запрашиваем временный путь (стриминг-ответ)
         const res = await fetch('/setavatar', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
           credentials: 'include',
-          body: JSON.stringify({ avatar: b64 }),
         });
 
-        if (res.ok) {
-          toast('Аватар обновлён');
-          // Local preview immediately
-          const localUrl = URL.createObjectURL(file);
-          userAvatar.textContent = '';
-          const img = document.createElement('img');
-          img.src = localUrl;
-          img.alt = 'avatar';
-          userAvatar.appendChild(img);
-          // Bust cache and reload from server
-          avatarBust = Date.now();
-          if (myLogin) setTimeout(() => loadMyAvatar(myLogin, true), 500);
-        } else {
+        if (!res.ok) {
           let err = `Ошибка ${res.status}`;
           try {
             const t = await res.text();
@@ -1080,13 +1162,102 @@
             } catch {
               err = t || err;
             }
-          } catch {}
+          } catch { }
           toast(err, true);
+          return;
         }
-      } catch {
+
+        if (!res.body) {
+          toast('Пустой ответ сервера', true);
+          return;
+        }
+
+        const reader = res.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = '';
+        let tempPath = null;
+
+        // Читаем до первой строки (tempPath\n)
+        while (tempPath === null) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          buffer += decoder.decode(value, { stream: true });
+          const nl = buffer.indexOf('\n');
+          if (nl !== -1) {
+            tempPath = buffer.slice(0, nl).trim();
+            buffer = buffer.slice(nl + 1);
+            break;
+          }
+        }
+
+        tempPath = normalizePath(tempPath);
+        if (!tempPath) {
+          toast('Не получен временный путь', true);
+          try { reader.cancel(); } catch { }
+          return;
+        }
+        console.log('tempPath:', tempPath);
+
+        // 2. Загружаем файл на :8081 + tempPath
+        const fileBuffer = await file.arrayBuffer();
+        const b64 = arrayBufferToBase64(fileBuffer);
+
+        const uploadRes = await fetch(fileServerBase() + tempPath, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({
+            File: b64,
+            ReceiverLogin: '',
+          }),
+        });
+        console.log("second resp path " + fileServerBase() + tempPath)
+
+        if (!uploadRes.ok) {
+          toast(`Ошибка загрузки файла: ${uploadRes.status}`, true);
+          try { reader.cancel(); } catch { }
+          return;
+        }
+
+        // 3. Дочитываем первый ответ в поисках "Success"
+        let gotSuccess = buffer.includes('Success');
+
+        while (!gotSuccess) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          buffer += decoder.decode(value, { stream: true });
+          if (buffer.includes('Success')) {
+            gotSuccess = true;
+            break;
+          }
+        }
+
+        try { reader.cancel(); } catch { }
+
+        if (gotSuccess) {
+          toast('Аватар обновлён');
+          // Локальный превью сразу
+          const localUrl = URL.createObjectURL(file);
+          const prev = userAvatar.querySelector('img');
+          if (prev && prev.src && prev.src.startsWith('blob:')) {
+            try { URL.revokeObjectURL(prev.src); } catch { }
+          }
+          userAvatar.textContent = '';
+          const img = document.createElement('img');
+          img.src = localUrl;
+          img.alt = 'avatar';
+          userAvatar.appendChild(img);
+          // Перезагружаем с сервера чуть позже
+          if (myLogin) setTimeout(() => loadMyAvatar(myLogin), 600);
+        } else {
+          toast('Не получено подтверждение Success', true);
+        }
+      } catch (e) {
+        console.error(e);
         toast('Не удалось загрузить аватар', true);
       }
     });
   </script>
 </body>
+
 </html>
