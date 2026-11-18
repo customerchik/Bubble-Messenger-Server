@@ -13,15 +13,10 @@ import (
 type SendFileRequest struct {
 	Receiver string
 	FileName string
-	File     []byte
 }
 
 type DelFileRequest struct {
 	Filename string
-}
-
-type SetAvatarRequest struct {
-	Avatar []byte `json:"avatar"`
 }
 
 type GetAvatarRequest struct {
@@ -39,7 +34,7 @@ func (h *Handler) SendFile(c echo.Context, requestBody []byte, key string, userL
 		return c.JSON(http.StatusBadRequest, "Invalid JSON")
 	}
 
-	if req.Receiver == "" || req.FileName == "" || req.File == nil {
+	if req.Receiver == "" || req.FileName == "" {
 		h.Blocker.RegisterStrike(c.RealIP())
 		return c.String(http.StatusBadRequest, "Did not receive all server data")
 	}
@@ -118,13 +113,7 @@ func (h *Handler) DelFile(c echo.Context, requestBody []byte, key string, userLo
 	return c.NoContent(http.StatusOK)
 }
 
-func (h *Handler) SetAvatar(c echo.Context, requestBody []byte, key string, userLogin string) error {
-	var req SetAvatarRequest
-	if err := json.Unmarshal(requestBody, &req); err != nil {
-		h.Blocker.RegisterStrike(c.RealIP())
-		return c.JSON(http.StatusBadRequest, "Invalid JSON")
-	}
-
+func (h *Handler) SetAvatar(c echo.Context, key string, userLogin string) error {
 	statusCh := make(chan string)
 	go h.FilesService.SaveAvatarTempPath(c.Request().Context(), statusCh)
 
