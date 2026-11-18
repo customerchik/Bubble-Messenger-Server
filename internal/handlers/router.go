@@ -108,7 +108,7 @@ func (rh *TLSHandler) Router(c echo.Context) error {
 	case "delmessages":
 		return rh.Handlers.DelMessages(c, key, req.Login)
 	case "setavatar":
-		return rh.Handlers.SetAvatar(c, req.RequestBody, key, req.Login)
+		return rh.Handlers.SetAvatar(c, key, req.Login)
 	case "getavatar":
 		return rh.Handlers.GetAvatar(c, req.RequestBody, key)
 	case "sendfile":
@@ -166,17 +166,12 @@ func (rh *TLSHandler) RouterDelFile(c echo.Context) error {
 }
 
 func (rh *TLSHandler) RouterSetAvatar(c echo.Context) error {
-	body, err := io.ReadAll(c.Request().Body)
-	if err != nil {
-		return err
-	}
-
 	login, err := c.Cookie(cookie.UserLogin)
 	if err != nil {
 		return c.String(http.StatusBadRequest, "Cookie mycookie is missing")
 	}
 
-	return rh.Handlers.SetAvatar(c, body, "", login.Value)
+	return rh.Handlers.SetAvatar(c, "", login.Value)
 }
 
 func (rh *TLSHandler) RouterGetAvatar(c echo.Context) error {
