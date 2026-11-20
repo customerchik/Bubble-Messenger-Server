@@ -11,7 +11,7 @@
 - [Files](https://github.com/mongolianpes/Bubble-Messenger-Server-Files) — сохранение файлов пользователей;
 - [AudioDialog](https://github.com/mongolianpes/Bubble-Messenger-Server-AudioDialog) — организация аудиодиалогов в режиме реального времени.
 
-Для взаимодействия с сервисной частью используется [Клиент]().
+Для взаимодействия с сервисной частью используется браузер, а также доступен [Клиент](https://github.com/mongolianpes/Bubble-Messenger-Client), функции которого можно использовать для устанавливаемого ПО.
 
 ## Функционал
 
