@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="ru">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -27,9 +28,14 @@
       --sidebar-w: 340px;
     }
 
-    * { margin: 0; padding: 0; box-sizing: border-box; }
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
 
-    html, body {
+    html,
+    body {
       height: 100%;
       font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
       background: var(--bg-deep);
@@ -45,6 +51,7 @@
       z-index: 0;
       overflow: hidden;
     }
+
     .bubble {
       position: absolute;
       border-radius: 50%;
@@ -52,20 +59,37 @@
       border: 1px solid rgba(59, 158, 255, 0.12);
       animation: float linear infinite;
     }
+
     .bubble::after {
       content: '';
       position: absolute;
-      top: 12%; left: 18%;
-      width: 35%; height: 20%;
+      top: 12%;
+      left: 18%;
+      width: 35%;
+      height: 20%;
       border-radius: 50%;
-      background: rgba(255,255,255,0.12);
+      background: rgba(255, 255, 255, 0.12);
       filter: blur(2px);
     }
+
     @keyframes float {
-      0% { transform: translateY(100vh) scale(0.6); opacity: 0; }
-      10% { opacity: 0.55; }
-      90% { opacity: 0.4; }
-      100% { transform: translateY(-15vh) scale(1); opacity: 0; }
+      0% {
+        transform: translateY(100vh) scale(0.6);
+        opacity: 0;
+      }
+
+      10% {
+        opacity: 0.55;
+      }
+
+      90% {
+        opacity: 0.4;
+      }
+
+      100% {
+        transform: translateY(-15vh) scale(1);
+        opacity: 0;
+      }
     }
 
     /* Layout */
@@ -84,6 +108,7 @@
       background: rgba(10, 22, 40, 0.9);
       border-bottom: 1px solid var(--border);
     }
+
     .header-inner {
       max-width: 1400px;
       margin: 0 auto;
@@ -93,6 +118,7 @@
       justify-content: space-between;
       gap: 1rem;
     }
+
     .logo {
       display: flex;
       align-items: center;
@@ -102,8 +128,10 @@
       font-weight: 700;
       font-size: 1.25rem;
     }
+
     .logo-icon {
-      width: 36px; height: 36px;
+      width: 36px;
+      height: 36px;
       border-radius: 50%;
       background: linear-gradient(135deg, #3b9eff, #1d6fd4);
       display: flex;
@@ -113,13 +141,16 @@
       position: relative;
       font-size: 1rem;
     }
+
     .logo-icon::after {
       content: '';
       position: absolute;
-      top: 7px; left: 9px;
-      width: 10px; height: 7px;
+      top: 7px;
+      left: 9px;
+      width: 10px;
+      height: 7px;
       border-radius: 50%;
-      background: rgba(255,255,255,0.35);
+      background: rgba(255, 255, 255, 0.35);
     }
 
     .header-user {
@@ -128,6 +159,7 @@
       gap: 0.75rem;
       position: relative;
     }
+
     .header-user .user-chip {
       display: flex;
       align-items: center;
@@ -140,12 +172,15 @@
       transition: background 0.2s, border-color 0.2s;
       user-select: none;
     }
+
     .header-user .user-chip:hover {
       background: rgba(59, 158, 255, 0.25);
       border-color: var(--accent);
     }
+
     .header-user .avatar {
-      width: 34px; height: 34px;
+      width: 34px;
+      height: 34px;
       border-radius: 50%;
       background: linear-gradient(135deg, #3b9eff, #6366f1);
       display: flex;
@@ -157,17 +192,28 @@
       overflow: hidden;
       flex-shrink: 0;
     }
+
     .header-user .avatar img {
-      width: 100%; height: 100%;
+      width: 100%;
+      height: 100%;
       object-fit: cover;
     }
+
     .header-user .meta {
       display: flex;
       flex-direction: column;
       line-height: 1.25;
     }
-    .header-user .meta .name { font-weight: 600; font-size: 0.9rem; }
-    .header-user .meta .login { font-size: 0.75rem; color: var(--text-muted); }
+
+    .header-user .meta .name {
+      font-weight: 600;
+      font-size: 0.9rem;
+    }
+
+    .header-user .meta .login {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
 
     .user-menu {
       display: none;
@@ -183,7 +229,11 @@
       box-shadow: 0 12px 40px rgba(0, 0, 0, 0.45);
       z-index: 200;
     }
-    .user-menu.visible { display: block; }
+
+    .user-menu.visible {
+      display: block;
+    }
+
     .user-menu button {
       width: 100%;
       display: flex;
@@ -201,9 +251,19 @@
       text-align: left;
       transition: background 0.15s;
     }
-    .user-menu button:hover { background: var(--accent-soft); }
-    .user-menu button.danger { color: var(--error); }
-    .user-menu button.danger:hover { background: var(--error-bg); }
+
+    .user-menu button:hover {
+      background: var(--accent-soft);
+    }
+
+    .user-menu button.danger {
+      color: var(--error);
+    }
+
+    .user-menu button.danger:hover {
+      background: var(--error-bg);
+    }
+
     .user-menu .menu-divider {
       height: 1px;
       background: var(--border);
@@ -211,7 +271,8 @@
     }
 
     .btn-icon {
-      width: 36px; height: 36px;
+      width: 36px;
+      height: 36px;
       border-radius: 10px;
       border: 1px solid var(--border);
       background: transparent;
@@ -223,6 +284,7 @@
       transition: all 0.2s;
       font-size: 1rem;
     }
+
     .btn-icon:hover {
       background: var(--accent-soft);
       border-color: var(--accent);
@@ -249,13 +311,16 @@
       flex-direction: column;
       min-height: 0;
     }
+
     .sidebar-search {
       padding: 1rem;
       border-bottom: 1px solid var(--border);
     }
+
     .search-wrap {
       position: relative;
     }
+
     .search-wrap input {
       width: 100%;
       padding: 0.7rem 1rem 0.7rem 2.5rem;
@@ -268,11 +333,16 @@
       outline: none;
       transition: border-color 0.2s, box-shadow 0.2s;
     }
-    .search-wrap input::placeholder { color: rgba(155,179,209,0.5); }
+
+    .search-wrap input::placeholder {
+      color: rgba(155, 179, 209, 0.5);
+    }
+
     .search-wrap input:focus {
       border-color: var(--accent);
       box-shadow: 0 0 0 3px var(--accent-soft);
     }
+
     .search-wrap .search-icon {
       position: absolute;
       left: 0.85rem;
@@ -282,14 +352,16 @@
       font-size: 0.95rem;
       pointer-events: none;
     }
+
     .search-hint {
       margin-top: 0.5rem;
       font-size: 0.75rem;
       color: var(--text-muted);
       line-height: 1.35;
     }
+
     .search-hint code {
-      background: rgba(59,158,255,0.12);
+      background: rgba(59, 158, 255, 0.12);
       color: var(--accent);
       padding: 0.1rem 0.35rem;
       border-radius: 4px;
@@ -302,7 +374,11 @@
       max-height: 220px;
       overflow-y: auto;
     }
-    .search-results.visible { display: block; }
+
+    .search-results.visible {
+      display: block;
+    }
+
     .search-results .item {
       display: flex;
       align-items: center;
@@ -311,9 +387,14 @@
       cursor: pointer;
       transition: background 0.15s;
     }
-    .search-results .item:hover { background: var(--accent-soft); }
+
+    .search-results .item:hover {
+      background: var(--accent-soft);
+    }
+
     .search-results .item .avatar {
-      width: 36px; height: 36px;
+      width: 36px;
+      height: 36px;
       border-radius: 50%;
       background: linear-gradient(135deg, #3b9eff, #6366f1);
       display: flex;
@@ -325,10 +406,17 @@
       overflow: hidden;
       flex-shrink: 0;
     }
+
     .search-results .item .avatar img {
-      width: 100%; height: 100%; object-fit: cover;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
     }
-    .search-results .item .info { min-width: 0; }
+
+    .search-results .item .info {
+      min-width: 0;
+    }
+
     .search-results .item .info .name {
       font-weight: 600;
       font-size: 0.9rem;
@@ -336,6 +424,7 @@
       overflow: hidden;
       text-overflow: ellipsis;
     }
+
     .search-results .item .info .login {
       font-size: 0.78rem;
       color: var(--text-muted);
@@ -346,12 +435,14 @@
       overflow-y: auto;
       min-height: 0;
     }
+
     .chat-list .empty {
       padding: 2rem 1.25rem;
       text-align: center;
       color: var(--text-muted);
       font-size: 0.9rem;
     }
+
     .chat-item {
       display: flex;
       align-items: center;
@@ -359,15 +450,21 @@
       padding: 0.85rem 1rem;
       cursor: pointer;
       transition: background 0.15s;
-      border-bottom: 1px solid rgba(59,158,255,0.06);
+      border-bottom: 1px solid rgba(59, 158, 255, 0.06);
     }
-    .chat-item:hover { background: rgba(59,158,255,0.08); }
+
+    .chat-item:hover {
+      background: rgba(59, 158, 255, 0.08);
+    }
+
     .chat-item.active {
       background: var(--accent-soft);
       border-left: 3px solid var(--accent);
     }
+
     .chat-item .avatar {
-      width: 44px; height: 44px;
+      width: 44px;
+      height: 44px;
       border-radius: 50%;
       background: linear-gradient(135deg, #3b9eff, #6366f1);
       display: flex;
@@ -379,13 +476,18 @@
       overflow: hidden;
       flex-shrink: 0;
     }
+
     .chat-item .avatar img {
-      width: 100%; height: 100%; object-fit: cover;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
     }
+
     .chat-item .info {
       flex: 1;
       min-width: 0;
     }
+
     .chat-item .info .top {
       display: flex;
       justify-content: space-between;
@@ -393,6 +495,7 @@
       gap: 0.5rem;
       margin-bottom: 0.15rem;
     }
+
     .chat-item .info .top .name {
       font-weight: 600;
       font-size: 0.95rem;
@@ -400,11 +503,13 @@
       overflow: hidden;
       text-overflow: ellipsis;
     }
+
     .chat-item .info .top .time {
       font-size: 0.72rem;
       color: var(--text-muted);
       flex-shrink: 0;
     }
+
     .chat-item .info .preview {
       font-size: 0.82rem;
       color: var(--text-muted);
@@ -412,6 +517,7 @@
       overflow: hidden;
       text-overflow: ellipsis;
     }
+
     .chat-item .badge {
       min-width: 20px;
       height: 20px;
@@ -436,6 +542,7 @@
       min-height: 0;
       background: rgba(10, 22, 40, 0.35);
     }
+
     .chat-empty {
       flex: 1;
       display: flex;
@@ -447,16 +554,22 @@
       padding: 2rem;
       text-align: center;
     }
+
     .chat-empty .big-icon {
       font-size: 3rem;
       opacity: 0.5;
     }
+
     .chat-empty h2 {
       font-size: 1.25rem;
       color: var(--text);
       font-weight: 600;
     }
-    .chat-empty p { font-size: 0.95rem; max-width: 320px; }
+
+    .chat-empty p {
+      font-size: 0.95rem;
+      max-width: 320px;
+    }
 
     .chat-header {
       flex-shrink: 0;
@@ -467,8 +580,10 @@
       gap: 0.85rem;
       background: rgba(10, 22, 40, 0.6);
     }
+
     .chat-header .avatar {
-      width: 40px; height: 40px;
+      width: 40px;
+      height: 40px;
       border-radius: 50%;
       background: linear-gradient(135deg, #3b9eff, #6366f1);
       display: flex;
@@ -479,20 +594,27 @@
       overflow: hidden;
       flex-shrink: 0;
     }
+
     .chat-header .avatar img {
-      width: 100%; height: 100%; object-fit: cover;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
     }
+
     .chat-header .info .name {
       font-weight: 600;
       font-size: 1rem;
     }
+
     .chat-header .info .login {
       font-size: 0.8rem;
       color: var(--text-muted);
     }
+
     .chat-header .back-mobile {
       display: none;
-      width: 36px; height: 36px;
+      width: 36px;
+      height: 36px;
       border: none;
       background: transparent;
       color: var(--text);
@@ -500,7 +622,10 @@
       cursor: pointer;
       border-radius: 10px;
     }
-    .chat-header .back-mobile:hover { background: var(--accent-soft); }
+
+    .chat-header .back-mobile:hover {
+      background: var(--accent-soft);
+    }
 
     .messages {
       flex: 1;
@@ -511,6 +636,7 @@
       gap: 0.6rem;
       min-height: 0;
     }
+
     .msg {
       max-width: 75%;
       padding: 0.7rem 1rem;
@@ -520,36 +646,43 @@
       position: relative;
       word-break: break-word;
     }
+
     .msg.incoming {
       align-self: flex-start;
       background: rgba(15, 33, 64, 0.9);
       border: 1px solid var(--border);
       border-bottom-left-radius: 4px;
     }
+
     .msg.outgoing {
       align-self: flex-end;
-      background: linear-gradient(135deg, rgba(59,158,255,0.35), rgba(29,111,212,0.4));
-      border: 1px solid rgba(59,158,255,0.3);
+      background: linear-gradient(135deg, rgba(59, 158, 255, 0.35), rgba(29, 111, 212, 0.4));
+      border: 1px solid rgba(59, 158, 255, 0.3);
       border-bottom-right-radius: 4px;
     }
+
     .msg .time {
       font-size: 0.7rem;
       color: var(--text-muted);
       margin-top: 0.35rem;
       text-align: right;
     }
+
     .msg.file {
       display: flex;
       flex-direction: column;
       gap: 0.4rem;
     }
+
     .msg.file .file-row {
       display: flex;
       align-items: center;
       gap: 0.6rem;
     }
+
     .msg.file .file-icon {
-      width: 36px; height: 36px;
+      width: 36px;
+      height: 36px;
       border-radius: 10px;
       background: var(--accent-soft);
       display: flex;
@@ -558,11 +691,13 @@
       font-size: 1.1rem;
       flex-shrink: 0;
     }
+
     .msg.file .file-name {
       font-weight: 500;
       font-size: 0.9rem;
       word-break: break-all;
     }
+
     .msg.file .file-download {
       display: inline-flex;
       align-items: center;
@@ -579,10 +714,12 @@
       cursor: pointer;
       transition: background 0.15s, border-color 0.15s;
     }
+
     .msg.file .file-download:hover {
       background: var(--accent-soft);
       border-color: var(--accent);
     }
+
     .msg.system {
       align-self: center;
       background: transparent;
@@ -598,6 +735,7 @@
       border-top: 1px solid var(--border);
       background: rgba(10, 22, 40, 0.7);
     }
+
     .composer-error {
       display: none;
       background: var(--error-bg);
@@ -608,17 +746,22 @@
       font-size: 0.85rem;
       margin-bottom: 0.6rem;
     }
-    .composer-error.visible { display: block; }
+
+    .composer-error.visible {
+      display: block;
+    }
 
     .composer-row {
       display: flex;
       align-items: flex-end;
       gap: 0.6rem;
     }
+
     .composer-input-wrap {
       flex: 1;
       position: relative;
     }
+
     .composer textarea {
       width: 100%;
       min-height: 44px;
@@ -635,18 +778,25 @@
       line-height: 1.4;
       transition: border-color 0.2s, box-shadow 0.2s;
     }
-    .composer textarea::placeholder { color: rgba(155,179,209,0.5); }
+
+    .composer textarea::placeholder {
+      color: rgba(155, 179, 209, 0.5);
+    }
+
     .composer textarea:focus {
       border-color: var(--accent);
       box-shadow: 0 0 0 3px var(--accent-soft);
     }
+
     .composer-actions {
       display: flex;
       gap: 0.4rem;
     }
+
     .composer .btn-attach,
     .composer .btn-send {
-      width: 44px; height: 44px;
+      width: 44px;
+      height: 44px;
       border-radius: 14px;
       border: none;
       cursor: pointer;
@@ -657,29 +807,35 @@
       transition: all 0.2s;
       flex-shrink: 0;
     }
+
     .btn-attach {
       background: transparent;
       border: 1px solid var(--border);
       color: var(--text-muted);
     }
+
     .btn-attach:hover {
       background: var(--accent-soft);
       border-color: var(--accent);
       color: var(--accent);
     }
+
     .btn-send {
       background: linear-gradient(135deg, #3b9eff, #1d6fd4);
       color: white;
       box-shadow: 0 4px 16px var(--accent-glow);
     }
+
     .btn-send:hover:not(:disabled) {
       transform: translateY(-1px);
       box-shadow: 0 6px 22px var(--accent-glow);
     }
+
     .btn-send:disabled {
       opacity: 0.55;
       cursor: not-allowed;
     }
+
     .file-preview {
       display: none;
       align-items: center;
@@ -691,7 +847,11 @@
       margin-bottom: 0.55rem;
       font-size: 0.85rem;
     }
-    .file-preview.visible { display: flex; }
+
+    .file-preview.visible {
+      display: flex;
+    }
+
     .file-preview .remove {
       margin-left: auto;
       background: none;
@@ -701,7 +861,10 @@
       font-size: 1rem;
       padding: 0.2rem;
     }
-    .file-preview .remove:hover { color: var(--error); }
+
+    .file-preview .remove:hover {
+      color: var(--error);
+    }
 
     /* Toast */
     .toast {
@@ -717,11 +880,18 @@
       font-size: 0.9rem;
       z-index: 200;
       transition: transform 0.3s ease;
-      box-shadow: 0 10px 40px rgba(0,0,0,0.4);
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
       max-width: 90%;
     }
-    .toast.show { transform: translateX(-50%) translateY(0); }
-    .toast.error { border-color: var(--error-border); color: var(--error); }
+
+    .toast.show {
+      transform: translateX(-50%) translateY(0);
+    }
+
+    .toast.error {
+      border-color: var(--error-border);
+      color: var(--error);
+    }
 
     /* Mobile */
     @media (max-width: 768px) {
@@ -733,26 +903,37 @@
         z-index: 20;
         transition: transform 0.25s ease;
       }
+
       .sidebar.hidden-mobile {
         transform: translateX(-100%);
         pointer-events: none;
       }
+
       .chat-area {
         width: 100%;
       }
+
       .chat-area.hidden-mobile {
         display: none;
       }
+
       .chat-header .back-mobile {
         display: flex;
         align-items: center;
         justify-content: center;
       }
-      .msg { max-width: 88%; }
-      .header-user .meta { display: none; }
+
+      .msg {
+        max-width: 88%;
+      }
+
+      .header-user .meta {
+        display: none;
+      }
     }
   </style>
 </head>
+
 <body>
   <div class="bubbles" id="bubbles" aria-hidden="true"></div>
 
@@ -829,7 +1010,7 @@
             </div>
             <div class="composer-row">
               <div class="composer-input-wrap">
-                <textarea id="msgInput" rows="1" placeholder="Сообщение..." ></textarea>
+                <textarea id="msgInput" rows="1" placeholder="Сообщение..."></textarea>
               </div>
               <div class="composer-actions">
                 <button type="button" class="btn-attach" id="attachBtn" title="Прикрепить файл">📎</button>
@@ -974,7 +1155,7 @@
     function saveAvatarCache(cache) {
       try {
         localStorage.setItem(AVATAR_CACHE_KEY, JSON.stringify(cache));
-      } catch {}
+      } catch { }
     }
 
     // ─── State ────────────────────────────────────────────
@@ -1019,7 +1200,7 @@
         localStorage.removeItem('bubble_chats_v1');
         localStorage.removeItem('bubble_avatars_v1');
         sessionStorage.removeItem('bubble_last_chat');
-      } catch {}
+      } catch { }
       window.location.href = '/';
     });
 
@@ -1060,7 +1241,7 @@
             } catch {
               err = t || err;
             }
-          } catch {}
+          } catch { }
           toast(err, true);
           return;
         }
@@ -1090,7 +1271,7 @@
         tempPath = normalizePath(tempPath);
         if (!tempPath) {
           toast('Не получен временный путь', true);
-          try { reader.cancel(); } catch {}
+          try { reader.cancel(); } catch { }
           return;
         }
 
@@ -1109,7 +1290,7 @@
 
         if (!uploadRes.ok) {
           toast(`Ошибка загрузки файла: ${uploadRes.status}`, true);
-          try { reader.cancel(); } catch {}
+          try { reader.cancel(); } catch { }
           return;
         }
 
@@ -1124,7 +1305,7 @@
           }
         }
 
-        try { reader.cancel(); } catch {}
+        try { reader.cancel(); } catch { }
 
         if (gotSuccess) {
           toast('Аватар обновлён');
@@ -1132,7 +1313,7 @@
           const localUrl = URL.createObjectURL(file);
           const prev = el.querySelector('img');
           if (prev && prev.src && prev.src.startsWith('blob:')) {
-            try { URL.revokeObjectURL(prev.src); } catch {}
+            try { URL.revokeObjectURL(prev.src); } catch { }
           }
           el.textContent = '';
           const img = document.createElement('img');
@@ -1143,7 +1324,7 @@
           // сброс кэша и перезагрузка с сервера
           if (myLogin) {
             if (avatarCache[myLogin] && avatarCache[myLogin].blobUrl) {
-              try { URL.revokeObjectURL(avatarCache[myLogin].blobUrl); } catch {}
+              try { URL.revokeObjectURL(avatarCache[myLogin].blobUrl); } catch { }
             }
             delete avatarCache[myLogin];
             saveAvatarCache(avatarCache);
@@ -1205,7 +1386,7 @@
         const tempPath = parseAvatarPath(await res.text());
         if (!tempPath) {
           if (avatarCache[login]?.blobUrl) {
-            try { URL.revokeObjectURL(avatarCache[login].blobUrl); } catch {}
+            try { URL.revokeObjectURL(avatarCache[login].blobUrl); } catch { }
           }
           delete avatarCache[login];
           saveAvatarCache(avatarCache);
@@ -1222,7 +1403,7 @@
         if (!blob || blob.size === 0) return null;
 
         if (avatarCache[login]?.blobUrl) {
-          try { URL.revokeObjectURL(avatarCache[login].blobUrl); } catch {}
+          try { URL.revokeObjectURL(avatarCache[login].blobUrl); } catch { }
         }
 
         const url = URL.createObjectURL(blob);
@@ -1232,7 +1413,7 @@
           const persist = loadAvatarCache();
           persist[login] = { path: tempPath };
           saveAvatarCache(persist);
-        } catch {}
+        } catch { }
         return url;
       } catch {
         return null;
@@ -1254,7 +1435,7 @@
       img.onload = () => {
         const prev = el.querySelector('img');
         if (prev && prev.src && prev.src.startsWith('blob:') && prev.src !== url) {
-          try { URL.revokeObjectURL(prev.src); } catch {}
+          try { URL.revokeObjectURL(prev.src); } catch { }
         }
         el.textContent = '';
         el.appendChild(img);
@@ -1324,7 +1505,7 @@
       }
       store.chats[login].unread = 0;
       saveStore(store);
-      try { sessionStorage.setItem('bubble_last_chat', login); } catch {}
+      try { sessionStorage.setItem('bubble_last_chat', login); } catch { }
 
       document.getElementById('chatEmpty').style.display = 'none';
       const active = document.getElementById('chatActive');
@@ -1376,7 +1557,7 @@
             } catch {
               err = t || err;
             }
-          } catch {}
+          } catch { }
           toast(err, true);
           return;
         }
@@ -1412,7 +1593,7 @@
         a.click();
         a.remove();
         setTimeout(() => {
-          try { URL.revokeObjectURL(url); } catch {}
+          try { URL.revokeObjectURL(url); } catch { }
         }, 60_000);
       } catch (e) {
         console.error(e);
@@ -1606,6 +1787,18 @@
           renderChatList();
           if (currentChatLogin) renderMessages();
         }
+
+        // После получения сообщений удаляем их на сервере
+        try {
+          await fetch('/delmessages', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify({}),
+          });
+        } catch (delErr) {
+          console.warn('delmessages failed', delErr);
+        }
       } catch (e) {
         console.warn('checkmessage failed', e);
       }
@@ -1756,7 +1949,7 @@
             } catch {
               errText = t || errText;
             }
-          } catch {}
+          } catch { }
           showComposerError(errText);
         }
       } catch {
@@ -1838,7 +2031,7 @@
             } catch {
               errText = t || errText;
             }
-          } catch {}
+          } catch { }
           showComposerError(errText);
           return;
         }
@@ -1869,7 +2062,7 @@
         tempPath = normalizePath(tempPath);
         if (!tempPath) {
           showComposerError('Не получен временный путь');
-          try { reader.cancel(); } catch {}
+          try { reader.cancel(); } catch { }
           return;
         }
 
@@ -1889,7 +2082,7 @@
 
         if (!uploadRes.ok) {
           showComposerError(`Ошибка загрузки файла: ${uploadRes.status}`);
-          try { reader.cancel(); } catch {}
+          try { reader.cancel(); } catch { }
           return;
         }
 
@@ -1905,7 +2098,7 @@
           }
         }
 
-        try { reader.cancel(); } catch {}
+        try { reader.cancel(); } catch { }
 
         if (!gotSuccess) {
           showComposerError('Не получено подтверждение Success');
@@ -1977,4 +2170,5 @@
     }
   </script>
 </body>
+
 </html>
