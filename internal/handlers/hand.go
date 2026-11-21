@@ -25,12 +25,17 @@ type PagesHandler struct {
 	sync.Mutex
 }
 
+type Nonces struct {
+	Nonces map[string]string
+	sync.Mutex
+}
+
 type TLSHandler struct {
 	Handlers                *Handler
 	PagesHandlers           *PagesHandler
 	Auth                    users.Auth
 	Blocker                 ipblocker.Blocker
-	UsersUsedRequestsNonces map[string]string
+	UsersUsedRequestsNonces *Nonces
 }
 
 func NewHand() (*TLSHandler, error) {
@@ -64,10 +69,12 @@ func NewHand() (*TLSHandler, error) {
 			AudioDialogService: audioDialogService,
 			Blocker:            blocker,
 		},
-		PagesHandlers:           &PagesHandler{},
-		Blocker:                 blocker,
-		Auth:                    usersService,
-		UsersUsedRequestsNonces: make(map[string]string),
+		PagesHandlers: &PagesHandler{},
+		Blocker:       blocker,
+		Auth:          usersService,
+		UsersUsedRequestsNonces: &Nonces{
+			Nonces: make(map[string]string),
+		},
 	}
 
 	router.PagesHandlers.readHTMLPages()

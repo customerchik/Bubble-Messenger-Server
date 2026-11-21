@@ -3,27 +3,16 @@ package handlers
 import (
 	"bubble/internal/cookie"
 	"bubble/internal/crypto"
+	"bubble/internal/crypto/tls"
 	"io"
 	"net/http"
 	"strings"
-	"time"
 
 	"github.com/labstack/echo/v4"
 )
 
-const maxRequestLatency = 30 * time.Second
-
-type TLSData struct {
-	Device      string
-	Login       string
-	Password    string
-	SendTime    string
-	Nonce       string
-	RequestBody []byte
-}
-
 func (rh *TLSHandler) Router(c echo.Context) error {
-	var req TLSData
+	var req tls.TLSData
 	if err := c.Bind(&req); err != nil {
 		rh.Blocker.RegisterStrike(c.RealIP())
 		return c.JSON(http.StatusBadRequest, "Invalid JSON")
@@ -40,42 +29,24 @@ func (rh *TLSHandler) Router(c echo.Context) error {
 		return c.String(http.StatusInternalServerError, err.Error())
 	}
 
-	req.SendTime, err = crypto.StringDecrypt(req.SendTime, key)
-	if err != nil {
-		c.Logger().Warnf("Decrypt error. DeviceID %s", req.Device)
-		encryptResp, _ := crypto.StringEncrypt([]byte("Decrypted error"), key)
-		return c.String(http.StatusInternalServerError, encryptResp)
-	}
-	if isOld, err := checkRequestLatencyOld(req.SendTime); isOld || err != nil {
-		if isOld {
-			c.Logger().Warnf("Send time old. DeviceID %s, SendTime %s", req.Device, req.SendTime)
-			encryptResp, _ := crypto.StringEncrypt([]byte("Old request"), key)
+	rh.UsersUsedRequestsNonces.Lock()
+	if err := tls.QueryCheck(rh.UsersUsedRequestsNonces.Nonces, &req, key); err != nil {
+		switch err {
+		case tls.DecryptErr:
+			c.Logger().Warnf("%s. DeviceID %s", err, req.Device)
+			encryptResp, _ := crypto.StringEncrypt([]byte(err.Error()), key)
+			return c.String(http.StatusInternalServerError, encryptResp)
+		case tls.ParseTimeErr, tls.ParseTimeErr:
+			c.Logger().Warnf("%s. DeviceID %s, SendTime %s", err, req.Device, req.SendTime)
+			encryptResp, _ := crypto.StringEncrypt([]byte(err.Error()), key)
 			return c.String(http.StatusBadRequest, encryptResp)
-		}
-
-		if err != nil {
-			c.Logger().Warnf("Cant parse send time. DeviceID %s, send time %s", req.Device, req.SendTime)
-			encryptResp, _ := crypto.StringEncrypt([]byte("Can not parse send time"), key)
-			return c.String(http.StatusBadRequest, encryptResp)
-		}
-	}
-
-	req.Nonce, err = crypto.StringDecrypt(req.Nonce, key)
-	if err != nil {
-		c.Logger().Warnf("Decrypt error. DeviceID %s", req.Device)
-		encryptResp, _ := crypto.StringEncrypt([]byte("Decrypted error"), key)
-		return c.String(http.StatusInternalServerError, encryptResp)
-	}
-
-	if nonce, ok := rh.UsersUsedRequestsNonces[req.Login]; ok {
-		if nonce == req.Nonce {
-			c.Logger().Warnf("Nonce is used twice. DeviceID %s, SendTime %s, Nonce %s", req.Device, req.SendTime, req.Nonce)
-			encryptResp, _ := crypto.StringEncrypt([]byte("Decrypted error"), key)
+		case tls.NonceUseTwice:
+			c.Logger().Warnf("%s. DeviceID %s, Nonce %s, SendTime %s", req.Device, req.Nonce, req.SendTime)
+			encryptResp, _ := crypto.StringEncrypt([]byte(err.Error()), key)
 			return c.String(http.StatusBadRequest, encryptResp)
 		}
 	}
-
-	rh.UsersUsedRequestsNonces[req.Login] = req.Nonce
+	rh.UsersUsedRequestsNonces.Unlock()
 
 	req.RequestBody, err = crypto.StringDecryptByte(req.RequestBody, key)
 	if err != nil {
@@ -120,21 +91,6 @@ func (rh *TLSHandler) Router(c echo.Context) error {
 	default:
 		return c.NoContent(http.StatusNotFound)
 	}
-}
-
-func checkRequestLatencyOld(sendTime string) (latencyOld bool, err error) {
-	latencyOld = true
-
-	var reqSendTime time.Time
-	reqSendTime, err = time.Parse(time.RFC3339, sendTime)
-	if err != nil {
-		return
-	}
-
-	if !reqSendTime.Add(maxRequestLatency).Before(time.Now()) {
-		latencyOld = false
-	}
-	return
 }
 
 func (rh *TLSHandler) RouterSendFile(c echo.Context) error {
