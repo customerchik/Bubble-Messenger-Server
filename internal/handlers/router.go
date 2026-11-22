@@ -25,7 +25,7 @@ func (rh *TLSHandler) Router(c echo.Context) error {
 
 	key, _, err := rh.Auth.GetAuthInfo(c.Request().Context(), req.Login, req.Password, req.Device)
 	if err != nil {
-		c.Logger().Errorf("GetAuthInfo IP %s ERR: %s", err, c.RealIP())
+		c.Logger().Errorf("GetAuthInfo IP %s ERR: %s", c.RealIP(), err)
 		return c.String(http.StatusInternalServerError, err.Error())
 	}
 
