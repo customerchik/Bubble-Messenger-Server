@@ -53,4 +53,6 @@
 Для корректной работы необходимы следующие переменные окружения:
 
 - `USERS_SERVICE_HOST_GRPC_PORT` — адрес и порт сервиса Users;
-- `MESSENGER_SERVICE_HOST_GRPC
+- `MESSENGER_SERVICE_HOST_GRPC` - адрес и порт сервиса Messenger;
+- `FILES_SERVICE_HOST_GRPC_PORT` - адрес и порт сервиса Files;
+- `AUDIO_DIALOG_SERVICE_HOST_GRPC_PORT` - адрес и порт сервиса Audio Dialog;
