@@ -226,7 +226,7 @@
       position: absolute;
       top: calc(100% + 8px);
       right: 0;
-      min-width: 220px;
+      min-width: 240px;
       background: rgba(15, 33, 64, 0.95);
       border: 1px solid var(--border);
       border-radius: 14px;
@@ -285,6 +285,81 @@
       height: 1px;
       background: var(--border);
       margin: 0.35rem 0;
+    }
+
+    /* PIN form inside menu */
+    .pin-form {
+      display: none;
+      padding: 0.6rem 0.5rem 0.4rem;
+      flex-direction: column;
+      gap: 0.55rem;
+    }
+
+    .pin-form.visible {
+      display: flex;
+    }
+
+    .pin-form .pin-title {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text);
+      padding: 0 0.4rem;
+    }
+
+    .pin-form .pin-hint {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      padding: 0 0.4rem;
+      line-height: 1.35;
+    }
+
+    .pin-form input {
+      width: 100%;
+      padding: 0.6rem 0.85rem;
+      background: rgba(10, 22, 40, 0.7);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--text);
+      font-family: inherit;
+      font-size: 1rem;
+      letter-spacing: 0.2em;
+      text-align: center;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .pin-form input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-soft);
+    }
+
+    .pin-form .pin-actions {
+      display: flex;
+      gap: 0.4rem;
+    }
+
+    .pin-form .pin-actions button {
+      flex: 1;
+      justify-content: center;
+      padding: 0.55rem 0.6rem;
+      font-size: 0.85rem;
+    }
+
+    .pin-form .pin-actions .pin-ok {
+      background: linear-gradient(135deg, #3b9eff, #1d6fd4);
+      color: white;
+    }
+
+    .pin-form .pin-actions .pin-ok:hover {
+      background: linear-gradient(135deg, #4aa8ff, #2a7de0);
+    }
+
+    .menu-actions {
+      display: block;
+    }
+
+    .menu-actions.hidden {
+      display: none;
     }
 
     .btn {
@@ -701,10 +776,44 @@
         </div>
 
         <div class="user-menu" id="userMenu">
-          <button type="button" id="menuChats">💬 Чаты</button>
-          <button type="button" id="menuSetAvatar">📷 Установить аватар</button>
-          <div class="menu-divider"></div>
-          <button type="button" class="danger" id="menuLogout">⏻ Выйти</button>
+          <!-- Normal menu actions -->
+          <div class="menu-actions" id="menuActions">
+            <button type="button" id="menuChats">💬 Чаты</button>
+            <button type="button" id="menuSetAvatar">📷 Установить аватар</button>
+            <button type="button" id="menuSetPin">🔐 Установить PIN</button>
+            <button type="button" id="menuRemovePin" style="display:none">🔓 Снять PIN</button>
+            <div class="menu-divider"></div>
+            <button type="button" class="danger" id="menuLogout">⏻ Выйти</button>
+          </div>
+
+          <!-- PIN unlock form -->
+          <div class="pin-form" id="pinUnlockForm">
+            <div class="pin-title">Введите PIN</div>
+            <div class="pin-hint">Для доступа к меню профиля</div>
+            <input type="password" id="pinUnlockInput" inputmode="numeric" pattern="[0-9]*" maxlength="8"
+              placeholder="••••" autocomplete="off">
+            <div class="pin-actions">
+              <button type="button" class="pin-ok" id="pinUnlockOk">ОК</button>
+              <button type="button" id="pinUnlockCancel">Отмена</button>
+            </div>
+            <div class="menu-error" id="pinUnlockError"></div>
+          </div>
+
+          <!-- PIN set / change form -->
+          <div class="pin-form" id="pinSetForm">
+            <div class="pin-title" id="pinSetTitle">Новый PIN</div>
+            <div class="pin-hint">4–8 цифр. Хранится только на этом устройстве.</div>
+            <input type="password" id="pinSetInput1" inputmode="numeric" pattern="[0-9]*" maxlength="8"
+              placeholder="PIN" autocomplete="off">
+            <input type="password" id="pinSetInput2" inputmode="numeric" pattern="[0-9]*" maxlength="8"
+              placeholder="Повторите PIN" autocomplete="off">
+            <div class="pin-actions">
+              <button type="button" class="pin-ok" id="pinSetOk">Сохранить</button>
+              <button type="button" id="pinSetCancel">Отмена</button>
+            </div>
+            <div class="menu-error" id="pinSetError"></div>
+          </div>
+
           <div class="menu-error" id="menuError"></div>
         </div>
 
@@ -945,7 +1054,6 @@
           }
         }
       }
-      // fallback: case-insensitive
       const lower = name.toLowerCase();
       for (let i = 0; i < parts.length; i++) {
         const part = parts[i].trim();
@@ -994,6 +1102,68 @@
       return p.startsWith('/') ? p : '/' + p;
     }
 
+    // ─── Local PIN (panel lock) ───────────────────────────
+    const PIN_HASH_KEY = 'bubble_pin_hash';
+    const PIN_UNLOCK_KEY = 'bubble_pin_unlock_until';
+    const PIN_UNLOCK_MS = 10 * 60 * 1000; // 10 minutes of inactivity
+
+    async function hashPin(pin) {
+      const data = new TextEncoder().encode('bubble_pin_v1:' + pin);
+      const buf = await crypto.subtle.digest('SHA-256', data);
+      return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+    }
+
+    function hasPin() {
+      try {
+        return !!localStorage.getItem(PIN_HASH_KEY);
+      } catch {
+        return false;
+      }
+    }
+
+    function isPinUnlocked() {
+      if (!hasPin()) return true;
+      try {
+        const until = Number(sessionStorage.getItem(PIN_UNLOCK_KEY) || 0);
+        return until > Date.now();
+      } catch {
+        return false;
+      }
+    }
+
+    function touchPinUnlock() {
+      if (!hasPin()) return;
+      try {
+        sessionStorage.setItem(PIN_UNLOCK_KEY, String(Date.now() + PIN_UNLOCK_MS));
+      } catch { }
+    }
+
+    function lockPin() {
+      try {
+        sessionStorage.removeItem(PIN_UNLOCK_KEY);
+      } catch { }
+    }
+
+    async function verifyPin(pin) {
+      const stored = localStorage.getItem(PIN_HASH_KEY);
+      if (!stored) return true;
+      const h = await hashPin(pin);
+      return h === stored;
+    }
+
+    async function savePin(pin) {
+      const h = await hashPin(pin);
+      localStorage.setItem(PIN_HASH_KEY, h);
+      touchPinUnlock();
+    }
+
+    function removePin() {
+      try {
+        localStorage.removeItem(PIN_HASH_KEY);
+        sessionStorage.removeItem(PIN_UNLOCK_KEY);
+      } catch { }
+    }
+
     // Auth UI
     const userInfo = document.getElementById('userInfo');
     const userMenu = document.getElementById('userMenu');
@@ -1005,13 +1175,80 @@
     const avatarInput = document.getElementById('avatarInput');
     const heroAuthBtn = document.getElementById('heroAuthBtn');
 
+    const menuActions = document.getElementById('menuActions');
+    const pinUnlockForm = document.getElementById('pinUnlockForm');
+    const pinSetForm = document.getElementById('pinSetForm');
+    const pinUnlockInput = document.getElementById('pinUnlockInput');
+    const pinUnlockError = document.getElementById('pinUnlockError');
+    const pinSetInput1 = document.getElementById('pinSetInput1');
+    const pinSetInput2 = document.getElementById('pinSetInput2');
+    const pinSetError = document.getElementById('pinSetError');
+    const menuSetPin = document.getElementById('menuSetPin');
+    const menuRemovePin = document.getElementById('menuRemovePin');
+
     let myLogin = '';
 
+    function updatePinMenuButtons() {
+      if (hasPin()) {
+        menuSetPin.textContent = '🔐 Изменить PIN';
+        menuRemovePin.style.display = '';
+      } else {
+        menuSetPin.textContent = '🔐 Установить PIN';
+        menuRemovePin.style.display = 'none';
+      }
+    }
+
+    function showMenuActions() {
+      menuActions.classList.remove('hidden');
+      pinUnlockForm.classList.remove('visible');
+      pinSetForm.classList.remove('visible');
+      pinUnlockError.classList.remove('visible');
+      pinSetError.classList.remove('visible');
+      updatePinMenuButtons();
+    }
+
+    function showPinUnlock() {
+      menuActions.classList.add('hidden');
+      pinSetForm.classList.remove('visible');
+      pinUnlockForm.classList.add('visible');
+      pinUnlockInput.value = '';
+      pinUnlockError.classList.remove('visible');
+      pinUnlockError.textContent = '';
+      setTimeout(() => pinUnlockInput.focus(), 50);
+    }
+
+    function showPinSet() {
+      menuActions.classList.add('hidden');
+      pinUnlockForm.classList.remove('visible');
+      pinSetForm.classList.add('visible');
+      pinSetInput1.value = '';
+      pinSetInput2.value = '';
+      pinSetError.classList.remove('visible');
+      pinSetError.textContent = '';
+      document.getElementById('pinSetTitle').textContent = hasPin() ? 'Изменить PIN' : 'Новый PIN';
+      setTimeout(() => pinSetInput1.focus(), 50);
+    }
+
+    function openUserMenu() {
+      userMenu.classList.add('visible');
+      menuError.classList.remove('visible');
+      menuError.textContent = '';
+
+      if (hasPin() && !isPinUnlocked()) {
+        showPinUnlock();
+      } else {
+        showMenuActions();
+        if (hasPin()) touchPinUnlock();
+      }
+    }
+
+    function closeUserMenu() {
+      userMenu.classList.remove('visible');
+      showMenuActions();
+    }
+
     /**
-     * Получение аватара (новый протокол):
-     * 1. POST /getavatar  body: { LoginForSearch: login }
-     * 2. В теле ответа — временный путь (tempPath)
-     * 3. GET/запрос на :8081 + tempPath → байты аватара
+     * Получение аватара (новый протокол)
      */
     async function loadMyAvatar(login) {
       if (!login) return;
@@ -1041,7 +1278,6 @@
         img.alt = login;
         img.onload = () => {
           userAvatar.textContent = '';
-          // revoke previous object URL if any
           const prev = userAvatar.querySelector('img');
           if (prev && prev.src && prev.src.startsWith('blob:')) {
             try { URL.revokeObjectURL(prev.src); } catch { }
@@ -1054,12 +1290,11 @@
         };
         img.src = url;
       } catch (e) {
-        // silent — avatar is optional
+        // silent
       }
     }
 
     (function checkAuth() {
-      // session_id часто HttpOnly — JS его не читает. Для UI достаточно name/login.
       const sessionId = getCookie('session_id');
       const name = getCookie('name');
       const login = getCookie('login');
@@ -1078,6 +1313,7 @@
           heroAuthBtn.textContent = 'Перейти в чаты';
         }
         if (login) loadMyAvatar(login);
+        updatePinMenuButtons();
       } else {
         userInfo.classList.remove('visible');
         if (loginBtn) loginBtn.style.display = '';
@@ -1087,24 +1323,120 @@
     // Toggle menu
     userInfo.addEventListener('click', (e) => {
       e.stopPropagation();
-      userMenu.classList.toggle('visible');
-      menuError.classList.remove('visible');
-      menuError.textContent = '';
+      if (userMenu.classList.contains('visible')) {
+        closeUserMenu();
+      } else {
+        openUserMenu();
+      }
+    });
+
+    // Any interaction inside the open menu extends unlock
+    userMenu.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (hasPin() && isPinUnlocked()) {
+        touchPinUnlock();
+      }
     });
 
     document.addEventListener('click', (e) => {
       if (!userMenu.contains(e.target) && !userInfo.contains(e.target)) {
-        userMenu.classList.remove('visible');
+        closeUserMenu();
       }
+    });
+
+    // PIN unlock
+    document.getElementById('pinUnlockOk').addEventListener('click', async () => {
+      const pin = pinUnlockInput.value.trim();
+      if (!pin) {
+        pinUnlockError.textContent = 'Введите PIN';
+        pinUnlockError.classList.add('visible');
+        return;
+      }
+      const ok = await verifyPin(pin);
+      if (!ok) {
+        pinUnlockError.textContent = 'Неверный PIN';
+        pinUnlockError.classList.add('visible');
+        pinUnlockInput.value = '';
+        pinUnlockInput.focus();
+        return;
+      }
+      touchPinUnlock();
+      showMenuActions();
+      toast('Панель разблокирована на 10 мин');
+    });
+
+    document.getElementById('pinUnlockCancel').addEventListener('click', () => {
+      closeUserMenu();
+    });
+
+    pinUnlockInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        document.getElementById('pinUnlockOk').click();
+      }
+    });
+
+    // Set / change PIN
+    document.getElementById('menuSetPin').addEventListener('click', () => {
+      if (hasPin() && !isPinUnlocked()) {
+        showPinUnlock();
+        return;
+      }
+      touchPinUnlock();
+      showPinSet();
+    });
+
+    document.getElementById('pinSetOk').addEventListener('click', async () => {
+      const p1 = pinSetInput1.value.trim();
+      const p2 = pinSetInput2.value.trim();
+      pinSetError.classList.remove('visible');
+
+      if (!/^\d{4,8}$/.test(p1)) {
+        pinSetError.textContent = 'PIN: 4–8 цифр';
+        pinSetError.classList.add('visible');
+        return;
+      }
+      if (p1 !== p2) {
+        pinSetError.textContent = 'PIN не совпадают';
+        pinSetError.classList.add('visible');
+        return;
+      }
+      await savePin(p1);
+      showMenuActions();
+      toast('PIN сохранён');
+    });
+
+    document.getElementById('pinSetCancel').addEventListener('click', () => {
+      showMenuActions();
+    });
+
+    // Remove PIN
+    document.getElementById('menuRemovePin').addEventListener('click', () => {
+      if (hasPin() && !isPinUnlocked()) {
+        showPinUnlock();
+        return;
+      }
+      removePin();
+      updatePinMenuButtons();
+      toast('PIN снят');
     });
 
     // Chats
     document.getElementById('menuChats').addEventListener('click', () => {
+      if (hasPin() && !isPinUnlocked()) {
+        showPinUnlock();
+        return;
+      }
+      touchPinUnlock();
       window.location.href = '/chats';
     });
 
     // Logout — clear cookies + local data
     document.getElementById('menuLogout').addEventListener('click', () => {
+      if (hasPin() && !isPinUnlocked()) {
+        showPinUnlock();
+        return;
+      }
       document.cookie = 'session_id=; Max-Age=0; path=/';
       document.cookie = 'name=; Max-Age=0; path=/';
       document.cookie = 'login=; Max-Age=0; path=/';
@@ -1112,28 +1444,24 @@
         localStorage.removeItem('bubble_chats_v1');
         localStorage.removeItem('bubble_avatars_v1');
         sessionStorage.removeItem('bubble_last_chat');
+        // PIN оставляем — это защита устройства, не аккаунта
       } catch { }
       window.location.href = '/';
     });
 
     // Set avatar
     document.getElementById('menuSetAvatar').addEventListener('click', () => {
+      if (hasPin() && !isPinUnlocked()) {
+        showPinUnlock();
+        return;
+      }
+      touchPinUnlock();
       userMenu.classList.remove('visible');
       avatarInput.click();
     });
 
     /**
-     * Установка аватара (новый протокол):
-     * 1. POST /setavatar  (тело пустое / без файла)
-     *    - при ошибке status != 200
-     *    - при успехе сервер стримит: tempPath + "\n", Flush, затем (после загрузки файла) "Success"
-     * 2. Клиент читает tempPath из стрима
-     * 3. POST на :8081 + tempPath
-     *    body (JSON FilesRequest):
-     *      { File: <base64 байтов>, ReceiverLogin: "" }
-     * 4. Успех, если:
-     *    - второй запрос вернул status OK
-     *    - в первом ответе пришла строка "Success"
+     * Установка аватара (новый протокол)
      */
     avatarInput.addEventListener('change', async () => {
       const file = avatarInput.files?.[0];
@@ -1146,7 +1474,6 @@
       }
 
       try {
-        // 1. Запрашиваем временный путь (стриминг-ответ)
         const res = await fetch('/setavatar', {
           method: 'POST',
           credentials: 'include',
@@ -1177,7 +1504,6 @@
         let buffer = '';
         let tempPath = null;
 
-        // Читаем до первой строки (tempPath\n)
         while (tempPath === null) {
           const { done, value } = await reader.read();
           if (done) break;
@@ -1196,9 +1522,7 @@
           try { reader.cancel(); } catch { }
           return;
         }
-        console.log('tempPath:', tempPath);
 
-        // 2. Загружаем файл на :8081 + tempPath
         const fileBuffer = await file.arrayBuffer();
         const b64 = arrayBufferToBase64(fileBuffer);
 
@@ -1211,7 +1535,6 @@
             ReceiverLogin: '',
           }),
         });
-        console.log("second resp path " + fileServerBase() + tempPath)
 
         if (!uploadRes.ok) {
           toast(`Ошибка загрузки файла: ${uploadRes.status}`, true);
@@ -1219,7 +1542,6 @@
           return;
         }
 
-        // 3. Дочитываем первый ответ в поисках "Success"
         let gotSuccess = buffer.includes('Success');
 
         while (!gotSuccess) {
@@ -1236,7 +1558,6 @@
 
         if (gotSuccess) {
           toast('Аватар обновлён');
-          // Локальный превью сразу
           const localUrl = URL.createObjectURL(file);
           const prev = userAvatar.querySelector('img');
           if (prev && prev.src && prev.src.startsWith('blob:')) {
@@ -1247,7 +1568,6 @@
           img.src = localUrl;
           img.alt = 'avatar';
           userAvatar.appendChild(img);
-          // Перезагружаем с сервера чуть позже
           if (myLogin) setTimeout(() => loadMyAvatar(myLogin), 600);
         } else {
           toast('Не получено подтверждение Success', true);

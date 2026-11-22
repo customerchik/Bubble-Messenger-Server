@@ -220,7 +220,7 @@
       position: absolute;
       top: calc(100% + 8px);
       right: 0;
-      min-width: 220px;
+      min-width: 240px;
       background: rgba(15, 33, 64, 0.95);
       border: 1px solid var(--border);
       border-radius: 14px;
@@ -268,6 +268,92 @@
       height: 1px;
       background: var(--border);
       margin: 0.35rem 0;
+    }
+
+    .menu-actions {
+      display: block;
+    }
+
+    .menu-actions.hidden {
+      display: none;
+    }
+
+    /* PIN form inside menu (set/change) */
+    .pin-form {
+      display: none;
+      padding: 0.6rem 0.5rem 0.4rem;
+      flex-direction: column;
+      gap: 0.55rem;
+    }
+
+    .pin-form.visible {
+      display: flex;
+    }
+
+    .pin-form .pin-title {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text);
+      padding: 0 0.4rem;
+    }
+
+    .pin-form .pin-hint {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      padding: 0 0.4rem;
+      line-height: 1.35;
+    }
+
+    .pin-form input {
+      width: 100%;
+      padding: 0.6rem 0.85rem;
+      background: rgba(10, 22, 40, 0.7);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--text);
+      font-family: inherit;
+      font-size: 1rem;
+      letter-spacing: 0.2em;
+      text-align: center;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .pin-form input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-soft);
+    }
+
+    .pin-form .pin-actions {
+      display: flex;
+      gap: 0.4rem;
+    }
+
+    .pin-form .pin-actions button {
+      flex: 1;
+      justify-content: center;
+      padding: 0.55rem 0.6rem;
+      font-size: 0.85rem;
+    }
+
+    .pin-form .pin-actions .pin-ok {
+      background: linear-gradient(135deg, #3b9eff, #1d6fd4);
+      color: white;
+    }
+
+    .pin-form .pin-actions .pin-ok:hover {
+      background: linear-gradient(135deg, #4aa8ff, #2a7de0);
+    }
+
+    .menu-error {
+      display: none;
+      padding: 0.5rem 0.9rem;
+      font-size: 0.8rem;
+      color: var(--error);
+    }
+
+    .menu-error.visible {
+      display: block;
     }
 
     .btn-icon {
@@ -893,6 +979,103 @@
       color: var(--error);
     }
 
+    /* ── Full-page PIN lock overlay ── */
+    .pin-lock-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      background: rgba(10, 22, 40, 0.92);
+      backdrop-filter: blur(20px);
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+    }
+
+    .pin-lock-overlay.visible {
+      display: flex;
+    }
+
+    .pin-lock-card {
+      width: 100%;
+      max-width: 360px;
+      background: rgba(15, 33, 64, 0.95);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 2rem 1.75rem;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+      text-align: center;
+    }
+
+    .pin-lock-card .lock-icon {
+      font-size: 2.5rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .pin-lock-card h2 {
+      font-size: 1.25rem;
+      font-weight: 700;
+      margin-bottom: 0.4rem;
+    }
+
+    .pin-lock-card p {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      margin-bottom: 1.5rem;
+    }
+
+    .pin-lock-card input {
+      width: 100%;
+      padding: 0.85rem 1rem;
+      background: rgba(10, 22, 40, 0.8);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      color: var(--text);
+      font-family: inherit;
+      font-size: 1.35rem;
+      letter-spacing: 0.35em;
+      text-align: center;
+      outline: none;
+      margin-bottom: 0.75rem;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .pin-lock-card input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-soft);
+    }
+
+    .pin-lock-card .pin-lock-error {
+      display: none;
+      color: var(--error);
+      font-size: 0.85rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .pin-lock-card .pin-lock-error.visible {
+      display: block;
+    }
+
+    .pin-lock-card .btn-unlock {
+      width: 100%;
+      padding: 0.8rem 1.4rem;
+      border: none;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #3b9eff, #1d6fd4);
+      color: white;
+      font-family: inherit;
+      font-weight: 600;
+      font-size: 0.95rem;
+      cursor: pointer;
+      box-shadow: 0 4px 16px var(--accent-glow);
+      transition: all 0.2s;
+    }
+
+    .pin-lock-card .btn-unlock:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 22px var(--accent-glow);
+    }
+
     /* Mobile */
     @media (max-width: 768px) {
       .sidebar {
@@ -935,6 +1118,19 @@
 </head>
 
 <body>
+  <!-- Full-page PIN lock -->
+  <div class="pin-lock-overlay" id="pinLockOverlay">
+    <div class="pin-lock-card">
+      <div class="lock-icon">🔐</div>
+      <h2>Введите PIN</h2>
+      <p>Страница защищена. Введите PIN, чтобы продолжить.</p>
+      <input type="password" id="pinLockInput" inputmode="numeric" pattern="[0-9]*" maxlength="8" placeholder="••••"
+        autocomplete="off">
+      <div class="pin-lock-error" id="pinLockError"></div>
+      <button type="button" class="btn-unlock" id="pinLockOk">Разблокировать</button>
+    </div>
+  </div>
+
   <div class="bubbles" id="bubbles" aria-hidden="true"></div>
 
   <div class="app">
@@ -953,10 +1149,29 @@
             </div>
           </div>
           <div class="user-menu" id="userMenu">
-            <button type="button" id="menuChats">💬 Чаты</button>
-            <button type="button" id="menuSetAvatar">📷 Установить аватар</button>
-            <div class="menu-divider"></div>
-            <button type="button" class="danger" id="menuLogout">⏻ Выйти</button>
+            <div class="menu-actions" id="menuActions">
+              <button type="button" id="menuChats">💬 Чаты</button>
+              <button type="button" id="menuSetAvatar">📷 Установить аватар</button>
+              <button type="button" id="menuSetPin">🔐 Установить PIN</button>
+              <button type="button" id="menuRemovePin" style="display:none">🔓 Снять PIN</button>
+              <div class="menu-divider"></div>
+              <button type="button" class="danger" id="menuLogout">⏻ Выйти</button>
+            </div>
+
+            <!-- PIN set / change form -->
+            <div class="pin-form" id="pinSetForm">
+              <div class="pin-title" id="pinSetTitle">Новый PIN</div>
+              <div class="pin-hint">4–8 цифр. Хранится только на этом устройстве. Блокирует всю страницу чатов.</div>
+              <input type="password" id="pinSetInput1" inputmode="numeric" pattern="[0-9]*" maxlength="8"
+                placeholder="PIN" autocomplete="off">
+              <input type="password" id="pinSetInput2" inputmode="numeric" pattern="[0-9]*" maxlength="8"
+                placeholder="Повторите PIN" autocomplete="off">
+              <div class="pin-actions">
+                <button type="button" class="pin-ok" id="pinSetOk">Сохранить</button>
+                <button type="button" id="pinSetCancel">Отмена</button>
+              </div>
+              <div class="menu-error" id="pinSetError"></div>
+            </div>
           </div>
           <input type="file" id="avatarInput" accept="image/*" hidden>
         </div>
@@ -1031,6 +1246,11 @@
     const POLL_INTERVAL = 5000; // ms
     const STORAGE_KEY = 'bubble_chats_v1';
     const AVATAR_CACHE_KEY = 'bubble_avatars_v1';
+
+    // PIN (same keys as main page)
+    const PIN_HASH_KEY = 'bubble_pin_hash';
+    const PIN_UNLOCK_KEY = 'bubble_pin_unlock_until';
+    const PIN_UNLOCK_MS = 10 * 60 * 1000; // 10 min inactivity
 
     // ─── Utils ────────────────────────────────────────────
     function getCookie(name) {
@@ -1118,16 +1338,132 @@
       return bytes;
     }
 
+    // ─── PIN helpers ──────────────────────────────────────
+    async function hashPin(pin) {
+      const data = new TextEncoder().encode('bubble_pin_v1:' + pin);
+      const buf = await crypto.subtle.digest('SHA-256', data);
+      return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+    }
+
+    function hasPin() {
+      try { return !!localStorage.getItem(PIN_HASH_KEY); }
+      catch { return false; }
+    }
+
+    function isPinUnlocked() {
+      if (!hasPin()) return true;
+      try {
+        const until = Number(sessionStorage.getItem(PIN_UNLOCK_KEY) || 0);
+        return until > Date.now();
+      } catch { return false; }
+    }
+
+    function touchPinUnlock() {
+      if (!hasPin()) return;
+      try {
+        sessionStorage.setItem(PIN_UNLOCK_KEY, String(Date.now() + PIN_UNLOCK_MS));
+      } catch { }
+    }
+
+    function lockPin() {
+      try { sessionStorage.removeItem(PIN_UNLOCK_KEY); }
+      catch { }
+    }
+
+    async function verifyPin(pin) {
+      const stored = localStorage.getItem(PIN_HASH_KEY);
+      if (!stored) return true;
+      const h = await hashPin(pin);
+      return h === stored;
+    }
+
+    async function savePin(pin) {
+      const h = await hashPin(pin);
+      localStorage.setItem(PIN_HASH_KEY, h);
+      touchPinUnlock();
+    }
+
+    function removePin() {
+      try {
+        localStorage.removeItem(PIN_HASH_KEY);
+        sessionStorage.removeItem(PIN_UNLOCK_KEY);
+      } catch { }
+    }
+
+    // Full-page lock UI
+    const pinLockOverlay = document.getElementById('pinLockOverlay');
+    const pinLockInput = document.getElementById('pinLockInput');
+    const pinLockError = document.getElementById('pinLockError');
+
+    function showPageLock() {
+      pinLockOverlay.classList.add('visible');
+      pinLockInput.value = '';
+      pinLockError.classList.remove('visible');
+      pinLockError.textContent = '';
+      setTimeout(() => pinLockInput.focus(), 80);
+    }
+
+    function hidePageLock() {
+      pinLockOverlay.classList.remove('visible');
+    }
+
+    function checkAndApplyPageLock() {
+      if (hasPin() && !isPinUnlocked()) {
+        showPageLock();
+      } else {
+        hidePageLock();
+        if (hasPin()) touchPinUnlock();
+      }
+    }
+
+    // Activity tracking → extend unlock window
+    let activityTimer = null;
+    function onUserActivity() {
+      if (!hasPin()) return;
+      if (!isPinUnlocked()) return; // already locked, ignore
+      touchPinUnlock();
+    }
+
+    ['click', 'keydown', 'mousemove', 'scroll', 'touchstart', 'pointerdown'].forEach(ev => {
+      document.addEventListener(ev, onUserActivity, { passive: true, capture: true });
+    });
+
+    // Periodic check: lock if unlock expired
+    setInterval(() => {
+      if (hasPin() && !isPinUnlocked() && !pinLockOverlay.classList.contains('visible')) {
+        showPageLock();
+      }
+    }, 5000);
+
+    // Unlock button
+    document.getElementById('pinLockOk').addEventListener('click', async () => {
+      const pin = pinLockInput.value.trim();
+      if (!pin) {
+        pinLockError.textContent = 'Введите PIN';
+        pinLockError.classList.add('visible');
+        return;
+      }
+      const ok = await verifyPin(pin);
+      if (!ok) {
+        pinLockError.textContent = 'Неверный PIN';
+        pinLockError.classList.add('visible');
+        pinLockInput.value = '';
+        pinLockInput.focus();
+        return;
+      }
+      touchPinUnlock();
+      hidePageLock();
+      toast('Страница разблокирована на 10 мин');
+    });
+
+    pinLockInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        document.getElementById('pinLockOk').click();
+      }
+    });
+
     // ─── Storage ──────────────────────────────────────────
-    // Structure:
-    // {
-    //   chats: {
-    //     [login]: {
-    //       login, name, lastText, lastTime, unread,
-    //       messages: [ { id, text, time, outgoing, isFile?, fileName? } ]
-    //     }
-    //   }
-    // }
     function loadStore() {
       try {
         return JSON.parse(localStorage.getItem(STORAGE_KEY)) || { chats: {} };
@@ -1160,7 +1496,7 @@
 
     // ─── State ────────────────────────────────────────────
     let store = loadStore();
-    let avatarCache = loadAvatarCache(); // login -> { path, url? }
+    let avatarCache = loadAvatarCache();
     let currentChatLogin = null;
     let myLogin = getCookie('login') || '';
     let myName = getCookie('name') || myLogin || 'Пользователь';
@@ -1176,15 +1512,63 @@
     const userChip = document.getElementById('userChip');
     const userMenu = document.getElementById('userMenu');
     const avatarInput = document.getElementById('avatarInput');
+    const menuActions = document.getElementById('menuActions');
+    const pinSetForm = document.getElementById('pinSetForm');
+    const pinSetInput1 = document.getElementById('pinSetInput1');
+    const pinSetInput2 = document.getElementById('pinSetInput2');
+    const pinSetError = document.getElementById('pinSetError');
+    const menuSetPin = document.getElementById('menuSetPin');
+    const menuRemovePin = document.getElementById('menuRemovePin');
+
+    function updatePinMenuButtons() {
+      if (hasPin()) {
+        menuSetPin.textContent = '🔐 Изменить PIN';
+        menuRemovePin.style.display = '';
+      } else {
+        menuSetPin.textContent = '🔐 Установить PIN';
+        menuRemovePin.style.display = 'none';
+      }
+    }
+
+    function showMenuActions() {
+      menuActions.classList.remove('hidden');
+      pinSetForm.classList.remove('visible');
+      pinSetError.classList.remove('visible');
+      updatePinMenuButtons();
+    }
+
+    function showPinSetForm() {
+      menuActions.classList.add('hidden');
+      pinSetForm.classList.add('visible');
+      pinSetInput1.value = '';
+      pinSetInput2.value = '';
+      pinSetError.classList.remove('visible');
+      document.getElementById('pinSetTitle').textContent = hasPin() ? 'Изменить PIN' : 'Новый PIN';
+      setTimeout(() => pinSetInput1.focus(), 50);
+    }
 
     userChip.addEventListener('click', (e) => {
       e.stopPropagation();
-      userMenu.classList.toggle('visible');
+      if (userMenu.classList.contains('visible')) {
+        userMenu.classList.remove('visible');
+        showMenuActions();
+      } else {
+        userMenu.classList.add('visible');
+        showMenuActions();
+        if (hasPin()) touchPinUnlock();
+      }
     });
+
     document.addEventListener('click', (e) => {
       if (!userMenu.contains(e.target) && !userChip.contains(e.target)) {
         userMenu.classList.remove('visible');
+        showMenuActions();
       }
+    });
+
+    userMenu.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (hasPin() && isPinUnlocked()) touchPinUnlock();
     });
 
     document.getElementById('menuChats').addEventListener('click', () => {
@@ -1200,6 +1584,7 @@
         localStorage.removeItem('bubble_chats_v1');
         localStorage.removeItem('bubble_avatars_v1');
         sessionStorage.removeItem('bubble_last_chat');
+        // PIN intentionally kept — device protection
       } catch { }
       window.location.href = '/';
     });
@@ -1209,11 +1594,46 @@
       avatarInput.click();
     });
 
+    // PIN set / change
+    menuSetPin.addEventListener('click', () => {
+      showPinSetForm();
+    });
+
+    document.getElementById('pinSetOk').addEventListener('click', async () => {
+      const p1 = pinSetInput1.value.trim();
+      const p2 = pinSetInput2.value.trim();
+      pinSetError.classList.remove('visible');
+
+      if (!/^\d{4,8}$/.test(p1)) {
+        pinSetError.textContent = 'PIN: 4–8 цифр';
+        pinSetError.classList.add('visible');
+        return;
+      }
+      if (p1 !== p2) {
+        pinSetError.textContent = 'PIN не совпадают';
+        pinSetError.classList.add('visible');
+        return;
+      }
+      await savePin(p1);
+      showMenuActions();
+      userMenu.classList.remove('visible');
+      toast('PIN сохранён. Страница будет блокироваться через 10 мин бездействия');
+    });
+
+    document.getElementById('pinSetCancel').addEventListener('click', () => {
+      showMenuActions();
+    });
+
+    menuRemovePin.addEventListener('click', () => {
+      removePin();
+      updatePinMenuButtons();
+      hidePageLock();
+      toast('PIN снят');
+      userMenu.classList.remove('visible');
+    });
+
     /**
-     * Установка аватара (новый протокол):
-     * 1. POST /setavatar (тело пустое)
-     * 2. Стрим: tempPath + "\n", затем "Success"
-     * 3. POST на :8081 + tempPath  body: { File: base64, ReceiverLogin: "" }
+     * Установка аватара (новый протокол)
      */
     avatarInput.addEventListener('change', async () => {
       const file = avatarInput.files?.[0];
@@ -1321,7 +1741,6 @@
           img.alt = 'avatar';
           el.appendChild(img);
 
-          // сброс кэша и перезагрузка с сервера
           if (myLogin) {
             if (avatarCache[myLogin] && avatarCache[myLogin].blobUrl) {
               try { URL.revokeObjectURL(avatarCache[myLogin].blobUrl); } catch { }
@@ -1343,9 +1762,7 @@
       }
     });
 
-    // ─── Avatars (новый протокол) ─────────────────────────
-    // getavatar → tempPath → GET :8081+tempPath → blob URL
-
+    // ─── Avatars ──────────────────────────────────────────
     function parseAvatarPath(text) {
       if (!text) return null;
       let path = String(text).trim();
@@ -1361,12 +1778,6 @@
       return normalizePath(path);
     }
 
-    /**
-     * 1. POST /getavatar { LoginForSearch }
-     * 2. тело ответа — временный путь
-     * 3. GET :8081 + tempPath → байты
-     * Возвращает object URL или null.
-     */
     async function loadAvatarBlobUrl(login, forceRefresh) {
       if (!login) return null;
 
@@ -1408,7 +1819,6 @@
 
         const url = URL.createObjectURL(blob);
         avatarCache[login] = { path: tempPath, blobUrl: url };
-        // blob URL нельзя надёжно хранить в localStorage — кэшируем только path
         try {
           const persist = loadAvatarCache();
           persist[login] = { path: tempPath };
@@ -1447,7 +1857,6 @@
       img.src = url;
     }
 
-    // Load my avatar
     if (myLogin) applyAvatar(document.getElementById('myAvatar'), myLogin, myName);
 
     // ─── Render chat list ─────────────────────────────────
@@ -1483,7 +1892,6 @@
         el.addEventListener('click', () => openChat(el.dataset.login));
       });
 
-      // Avatars
       list.querySelectorAll('[data-avatar]').forEach(el => {
         applyAvatar(el, el.dataset.avatar, el.textContent);
       });
@@ -1518,7 +1926,6 @@
       renderMessages();
       renderChatList();
 
-      // Mobile: hide sidebar
       if (window.innerWidth <= 768) {
         document.getElementById('sidebar').classList.add('hidden-mobile');
         document.getElementById('chatArea').classList.remove('hidden-mobile');
@@ -1527,12 +1934,6 @@
       document.getElementById('msgInput').focus();
     }
 
-    /**
-     * Получение файла (новый протокол, как у аватара):
-     * 1. POST /getfile  body: { StorageFilepath }
-     * 2. Ответ — временный путь (status OK)
-     * 3. GET :8081 + tempPath → байты файла
-     */
     async function downloadFile(storagePath, fileName) {
       if (!storagePath) {
         toast('Нет пути к файлу', true);
@@ -1605,16 +2006,12 @@
       }
     }
 
-    /** Parse incoming file marker: p\filename\storage/path */
     function parseIncomingFileText(text) {
       if (!text || typeof text !== 'string') return null;
-      // p\<filename>\<path>
       if (!text.startsWith('p\\') && !text.startsWith('p/')) return null;
-      const rest = text.slice(2); // after "p\" or "p/"
-      // split by backslash; also allow if server sent single backslashes
+      const rest = text.slice(2);
       let parts = rest.split('\\');
       if (parts.length < 2) {
-        // try forward slash form p/name/path... (unlikely)
         parts = rest.split('/');
         if (parts.length < 2) return null;
         const fileName = parts[0];
@@ -1677,7 +2074,6 @@
       box.scrollTop = box.scrollHeight;
     }
 
-    // ─── Ensure chat exists ───────────────────────────────
     function ensureChat(login, name) {
       if (!store.chats[login]) {
         store.chats[login] = {
@@ -1696,7 +2092,6 @@
     function addMessage(login, msg) {
       ensureChat(login, store.chats[login]?.name);
       const chat = store.chats[login];
-      // Dedup by id if present
       if (msg.id && chat.messages.some(m => m.id === msg.id)) return false;
       chat.messages.push(msg);
       chat.lastText = msg.isFile ? ('📎 ' + (msg.fileName || 'Файл')) : msg.text;
@@ -1710,6 +2105,9 @@
 
     // ─── Poll /checkmessage ───────────────────────────────
     async function checkMessages() {
+      // Don't poll while page is locked
+      if (hasPin() && !isPinUnlocked()) return;
+
       try {
         const res = await fetch('/checkmessage', {
           method: 'POST',
@@ -1720,27 +2118,21 @@
         if (!res.ok) return;
 
         const data = await res.json();
-        // Messages is []byte → base64 string in JSON
         let raw = data.Messages || data.messages || '';
         if (!raw) return;
 
         let text;
         if (typeof raw === 'string') {
-          // base64
           try {
             text = new TextDecoder().decode(base64ToUint8Array(raw));
           } catch {
-            text = raw; // maybe already plain
+            text = raw;
           }
         } else if (Array.isArray(raw)) {
-          // unlikely but handle
           text = raw.map(x => typeof x === 'string' ? x : JSON.stringify(x)).join('\n');
         } else {
           return;
         }
-
-        // Optional gzip (user said always default/false)
-        // if (data.Gzip) { ... gunzip ... }
 
         const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
         let changed = false;
@@ -1750,7 +2142,6 @@
           try {
             msgObj = JSON.parse(line);
           } catch {
-            // try simple "login|text|time" fallback
             continue;
           }
           const sender = msgObj.SenderLogin || msgObj.senderLogin || msgObj.sender || '';
@@ -1788,7 +2179,6 @@
           if (currentChatLogin) renderMessages();
         }
 
-        // После получения сообщений удаляем их на сервере
         try {
           await fetch('/delmessages', {
             method: 'POST',
@@ -1825,7 +2215,6 @@
     });
 
     async function doSearch(query) {
-      // Support @login
       let loginForSearch = query;
       if (loginForSearch.startsWith('@')) loginForSearch = loginForSearch.slice(1);
       if (!loginForSearch) {
@@ -1993,13 +2382,6 @@
       filePreview.classList.remove('visible');
     });
 
-    /**
-     * Отправка файла (новый протокол, как у аватара):
-     * 1. POST /sendfile  body: { Receiver, FileName }  (без байтов)
-     * 2. Стрим: tempPath + "\n", Flush; позже "Success"
-     * 3. POST :8081 + tempPath  body: { File: base64, ReceiverLogin }
-     * 4. Успех: upload status 200 + строка "Success" в первом стриме
-     */
     async function sendFile() {
       if (!currentChatLogin || !pendingFile) return;
       hideComposerError();
@@ -2010,7 +2392,6 @@
       const fileName = file.name;
 
       try {
-        // 1. Запрос временного пути
         const res = await fetch('/sendfile', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -2046,7 +2427,6 @@
         let buffer = '';
         let tempPath = null;
 
-        // 2. Читаем tempPath до первой \n
         while (tempPath === null) {
           const { done, value } = await reader.read();
           if (done) break;
@@ -2066,7 +2446,6 @@
           return;
         }
 
-        // 3. Загрузка байтов на :8081
         const buf = await file.arrayBuffer();
         const b64 = arrayBufferToBase64(buf);
 
@@ -2086,7 +2465,6 @@
           return;
         }
 
-        // 4. Ждём "Success" в первом стриме
         let gotSuccess = buffer.includes('Success');
         while (!gotSuccess) {
           const { done, value } = await reader.read();
@@ -2160,10 +2538,12 @@
     })();
 
     // ─── Init ─────────────────────────────────────────────
+    updatePinMenuButtons();
+    checkAndApplyPageLock();
+
     renderChatList();
     startPolling();
 
-    // Restore last open chat
     const last = sessionStorage.getItem('bubble_last_chat');
     if (last && store.chats[last]) {
       openChat(last);
