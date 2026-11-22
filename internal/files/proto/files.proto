@@ -12,6 +12,7 @@ message DelFileResponse {}
 
 message TempPathReqeust {
   string info = 1;
+  string crypto_key = 2;
 }
 
 message TempPathResponse {

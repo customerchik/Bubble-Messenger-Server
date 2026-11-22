@@ -4,6 +4,7 @@ import (
 	"bubble/internal/crypto"
 	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"strings"
 
@@ -40,7 +41,7 @@ func (h *Handler) SendFile(c echo.Context, requestBody []byte, key string, userL
 	}
 
 	statusCh := make(chan string)
-	go h.FilesService.SaveFileTempPath(c.Request().Context(), statusCh)
+	go h.FilesService.SaveFileTempPath(c.Request().Context(), key, statusCh)
 
 	tempPath := <-statusCh
 	if strings.Contains(tempPath, "Error") {
@@ -115,7 +116,7 @@ func (h *Handler) DelFile(c echo.Context, requestBody []byte, key string, userLo
 
 func (h *Handler) SetAvatar(c echo.Context, key string, userLogin string) error {
 	statusCh := make(chan string)
-	go h.FilesService.SaveAvatarTempPath(c.Request().Context(), statusCh)
+	go h.FilesService.SaveAvatarTempPath(c.Request().Context(), key, statusCh)
 
 	tempPath := <-statusCh
 	if strings.Contains(tempPath, "Error") {
@@ -130,6 +131,7 @@ func (h *Handler) SetAvatar(c echo.Context, key string, userLogin string) error 
 	}
 
 	storageAvatarPath := <-statusCh
+	fmt.Println(storageAvatarPath)
 	if strings.Contains(storageAvatarPath, "Error") {
 		if _, err := c.Response().Write([]byte(storageAvatarPath + "\n")); err != nil {
 			return err
@@ -174,9 +176,11 @@ func (h *Handler) GetAvatar(c echo.Context, requestBody []byte, key string) erro
 		}
 		return c.String(http.StatusInternalServerError, resp)
 	}
+	fmt.Println(storagePath)
 
-	tempPath, err := h.FilesService.DownloadFileTempPath(c.Request().Context(), storagePath)
+	tempPath, err := h.FilesService.DownloadFileTempPath(c.Request().Context(), storagePath, key)
 	if err != nil {
+		c.Logger().Errorf("Generate temp path for Download ERR %s", err)
 		resp := "Cant generate temp path"
 		if key != "" {
 			resp, _ = crypto.StringEncrypt([]byte(resp), key)
@@ -187,6 +191,7 @@ func (h *Handler) GetAvatar(c echo.Context, requestBody []byte, key string) erro
 	if key != "" {
 		tempPath, err = crypto.StringEncrypt([]byte(tempPath), key)
 		if err != nil {
+			c.Logger().Errorf("Encrypt temp path ERR %s", err)
 			resp := "Decrypted error"
 			if key != "" {
 				resp, _ = crypto.StringEncrypt([]byte(resp), key)
@@ -218,7 +223,7 @@ func (h *Handler) GetFile(c echo.Context, requestBody []byte, key string, userLo
 		return c.String(http.StatusInternalServerError, resp)
 	}
 
-	tempPath, err := h.FilesService.DownloadFileTempPath(c.Request().Context(), req.StorageFilepath)
+	tempPath, err := h.FilesService.DownloadFileTempPath(c.Request().Context(), req.StorageFilepath, key)
 	if err != nil {
 		resp := "Cant generate temp path"
 		if key != "" {

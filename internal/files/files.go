@@ -22,9 +22,9 @@ type Client struct {
 }
 
 type FilesService interface {
-	DownloadFileTempPath(ctx context.Context, filepath string) (string, error)
-	SaveAvatarTempPath(ctx context.Context, ch chan<- string)
-	SaveFileTempPath(ctx context.Context, ch chan<- string)
+	DownloadFileTempPath(ctx context.Context, filepath, key string) (string, error)
+	SaveAvatarTempPath(ctx context.Context, key string, ch chan<- string)
+	SaveFileTempPath(ctx context.Context, key string, ch chan<- string)
 	DelFile(ctx context.Context, storagePath string) error
 }
 
@@ -53,9 +53,13 @@ func (c *Client) Close() error {
 	return c.conn.Close()
 }
 
-func (c *Client) DownloadFileTempPath(ctx context.Context, filepath string) (string, error) {
+func (c *Client) DownloadFileTempPath(ctx context.Context, filepath, key string) (string, error) {
+	fmt.Println("filepath", filepath)
+	fmt.Println("key", key)
+
 	stream, err := c.service.TempPath(ctx, &pb.TempPathReqeust{
-		Info: filepath,
+		Info:      filepath,
+		CryptoKey: key,
 	})
 	if err != nil {
 		return "", err
@@ -70,17 +74,20 @@ func (c *Client) DownloadFileTempPath(ctx context.Context, filepath string) (str
 	return resp.TempPath, nil
 }
 
-func (c *Client) SaveAvatarTempPath(ctx context.Context, ch chan<- string) {
-	c.tempPath(ctx, saveAvatar, ch)
+func (c *Client) SaveAvatarTempPath(ctx context.Context, key string, ch chan<- string) {
+	c.tempPath(ctx, saveAvatar, key, ch)
 }
 
-func (c *Client) SaveFileTempPath(ctx context.Context, ch chan<- string) {
-	c.tempPath(ctx, saveFile, ch)
+func (c *Client) SaveFileTempPath(ctx context.Context, key string, ch chan<- string) {
+	c.tempPath(ctx, saveFile, key, ch)
 }
 
-func (c *Client) tempPath(ctx context.Context, filepath string, ch chan<- string) {
+func (c *Client) tempPath(ctx context.Context, filepath, key string, ch chan<- string) {
+	fmt.Println("filepath", filepath)
+	fmt.Println("key", key)
 	stream, err := c.service.TempPath(ctx, &pb.TempPathReqeust{
-		Info: filepath,
+		Info:      filepath,
+		CryptoKey: key,
 	})
 	if err != nil {
 		ch <- fmt.Sprintf("Error: %s", err)

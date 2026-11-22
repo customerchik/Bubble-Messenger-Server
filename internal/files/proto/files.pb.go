@@ -104,6 +104,7 @@ func (*DelFileResponse) Descriptor() ([]byte, []int) {
 type TempPathReqeust struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Info          string                 `protobuf:"bytes,1,opt,name=info,proto3" json:"info,omitempty"`
+	CryptoKey     string                 `protobuf:"bytes,2,opt,name=crypto_key,json=cryptoKey,proto3" json:"crypto_key,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -141,6 +142,13 @@ func (*TempPathReqeust) Descriptor() ([]byte, []int) {
 func (x *TempPathReqeust) GetInfo() string {
 	if x != nil {
 		return x.Info
+	}
+	return ""
+}
+
+func (x *TempPathReqeust) GetCryptoKey() string {
+	if x != nil {
+		return x.CryptoKey
 	}
 	return ""
 }
@@ -204,9 +212,11 @@ const file_files_proto_rawDesc = "" +
 	"\vfiles.proto\x12\x05files\"3\n" +
 	"\x0eDelFileRequest\x12!\n" +
 	"\fstorage_path\x18\x01 \x01(\tR\vstoragePath\"\x11\n" +
-	"\x0fDelFileResponse\"%\n" +
+	"\x0fDelFileResponse\"D\n" +
 	"\x0fTempPathReqeust\x12\x12\n" +
-	"\x04info\x18\x01 \x01(\tR\x04info\"R\n" +
+	"\x04info\x18\x01 \x01(\tR\x04info\x12\x1d\n" +
+	"\n" +
+	"crypto_key\x18\x02 \x01(\tR\tcryptoKey\"R\n" +
 	"\x10TempPathResponse\x12\x1b\n" +
 	"\ttemp_path\x18\x01 \x01(\tR\btempPath\x12!\n" +
 	"\fstorage_path\x18\x02 \x01(\tR\vstoragePath2\x83\x01\n" +
